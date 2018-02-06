@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from operator import itemgetter
 import timeit
-PATHTODATA="~/FEAST_Data/" #Set by the user
+PATHTODATA="~/FEAST_Data/"
 DATAFILE="M3"
 NSOURCES=20 ###CHANGE ACCOMPANYING n IN unknown_initialize function usually 60% of NSOURCES
 MIXINGITERATIONS=50
