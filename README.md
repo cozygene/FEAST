@@ -11,12 +11,14 @@ Software Requirements:
 
 
 FEAST in R
+-----------------------
 
 FEAST uses the following dependencies : "doParallel", "foreach", "mgcv", "reshape2", "ggplot2", "philentropy", "MCMCpack", "lsei", "Rcpp", "RcppArmadillo" and "cowplot".  
 
 
 
-pyFEAST in Python 2.7
+FEAST in Python 2.7 (pyFEAST)
+-----------------------
 
 pyFEAST mainly uses numpy and achieves faster performance than its R counterpart. The main difference between the R and python implementations of FEAST is that the R version initializes the mixing proportions of the EM algorithm using a solution to constrained least squares, and pyFEAST uses a solution from non-negative least squares. To our current knowledge, this does not cause differences in EM estimations.
 
