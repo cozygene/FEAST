@@ -13,43 +13,6 @@ library("RcppArmadillo")
 cppFunction("arma::mat schur(arma::mat& a, arma::mat& b) 
             {return(a % b); }", depends="RcppArmadillo")
 
-
-"change_C"<-function(newcov, X){
-  
-  # newcov = COVERAGE; X = totalnew_source[1,]
-  
-  X=t(as.matrix(X))
-  idx = 1:dim(X)[2]
-  
-  if(sum(X) > newcov){
-    
-    while(sum(X) > newcov){
-      greaterone = X > 1
-      samps = 20
-      if(samps > length(X[greaterone]))
-        samps = length(X[greaterone])
-      changeidx = sample(idx[greaterone], samps, replace = F)
-      X[changeidx] = X[changeidx] - 1
-    }
-    
-  }
-  
-  if(sum(X) < newcov){
-    
-    while(sum(X) < newcov){
-      greaterone = X > 1
-      samps = 100
-      if(samps > length(X[greaterone]))
-        samps = length(X[greaterone])
-      changeidx = sample(idx[greaterone], samps, replace = F)
-      X[changeidx] = X[changeidx] + 1
-    }
-    
-  }
-  
-  return(X)
-}
-
 rarefy <- function(x,maxdepth){
   
   # x = totalsource
