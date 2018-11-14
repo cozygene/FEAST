@@ -13,10 +13,44 @@ library("RcppArmadillo")
 cppFunction("arma::mat schur(arma::mat& a, arma::mat& b) 
             {return(a % b); }", depends="RcppArmadillo")
 
-rarefy <- function(x,maxdepth){
+
+"change_C"<-function(newcov, X){
+
   
-  # x = totalsource
-  # maxdepth = COVERAGE
+  X=t(as.matrix(X))
+  idx = 1:dim(X)[2]
+  
+  if(sum(X) > newcov){
+    
+    while(sum(X) > newcov){
+      greaterone = X > 1
+      samps = 20
+      if(samps > length(X[greaterone]))
+        samps = length(X[greaterone])
+      changeidx = sample(idx[greaterone], samps, replace = F)
+      X[changeidx] = X[changeidx] - 1
+    }
+    
+  }
+
+  if(sum(X) < newcov){
+    
+    while(sum(X) < newcov){
+      greaterone = X > 1
+      samps = 100
+      if(samps > length(X[greaterone]))
+        samps = length(X[greaterone])
+      changeidx = sample(idx[greaterone], samps, replace = F)
+      X[changeidx] = X[changeidx] + 1
+    }
+    
+  }
+  
+  return(X)
+}
+
+rarefy <- function(x,maxdepth){
+ 
   
   if(is.null(maxdepth)) return(x)
   
@@ -80,9 +114,7 @@ rarefy <- function(x,maxdepth){
 }
 
 "M"<-function(alphas, sources, sink, observed){
-  
-  # alphas = curalphas; sources = sources; sink = sink; observed = observed
-  
+    
   newalphs<-c()
   rel_sink <-sink/sum(sink)
   
@@ -117,7 +149,6 @@ rarefy <- function(x,maxdepth){
   sources = source_new
   
   newalphs<-c()
-  #sink<-as.matrix(sink); #src1<-as.matrix(sources[[1]]); src2<-as.matrix(sources[[2]])
   sources<-lapply(sources, t)
   XOs<-lapply(sources,schur, b=rel_sink)
   AOs<-t(mapply(crossprod, x=sources, y=alphas))
@@ -137,32 +168,20 @@ rarefy <- function(x,maxdepth){
 }
 
 "do_EM"<-function(alphas, sources, observed, sink, iterations){
-  
-  # alphas=initalphs; sources=samps; sink=sink; iterations=em_itr; observed = samps
-  
+    
   curalphas<-alphas
   newalphas<-alphas
   m_guesses<-c(alphas[1])
-  #print(paste("first guess: ", m_guesses[1]))
-  #prevll<-LL(alphas=newalphas,sources=sources, sink=sink)
   for(itr in 1:iterations){
     
     curalphas<-E(newalphas, sources)
     tmp <- M(alphas = curalphas, sources = sources, sink = sink, observed = observed)
     newalphas <- tmp$new_alpha
     sources <- tmp$new_sources  
-    #print(paste("length newalphas: ", length(newalphas)))
-    #print(paste("new alphas: ", newalphas))
     m_guesses<-c(m_guesses, newalphas[1])
-    #print(paste("length mguess: ", length(m_guesses)))
-    #print(paste("itr: ", itr))
-    #print(paste("New alphas: ", newalphas[1]))
-    #newll<-LL(alphas=newalphas,sources=sources, sink=sink)
-    #print(paste("newlikelihood: ", LL(alphas = newalphas, sources = sources, sink = sink)))
-    #print(paste("guessprev: ", m_guesses[length(m_guesses)], "guesscur: ", m_guesses[length(m_guesses)-1]))
     if(abs(m_guesses[length(m_guesses)]-m_guesses[length(m_guesses)-1])<=10^-6) break
-    #prevll<-newll
-  }         #                             this will return epsilon
+    
+  }        
   toret<-c(newalphas)
   results <- list(toret = toret, sources = sources)
   
@@ -171,8 +190,6 @@ rarefy <- function(x,maxdepth){
 
 "M_basic"<-function(alphas, sources, sink){
   newalphs<-c()
-  #sink<-as.matrix(sink); #src1<-as.matrix(sources[[1]]); src2<-as.matrix(sources[[2]])
-  #sources<-lapply(sources, as.matrix)
   XOs<-lapply(sources,schur, b=sink)
   AOs<-t(mapply(crossprod, x=sources, y=alphas))
   AOs<-split(AOs, seq(nrow(AOs)))
@@ -193,23 +210,13 @@ rarefy <- function(x,maxdepth){
   curalphas<-alphas
   newalphas<-alphas
   m_guesses<-c(alphas[1])
-  #print(paste("first guess: ", m_guesses[1]))
-  #prevll<-LL(alphas=newalphas,sources=sources, sink=sink)
   for(itr in 1:iterations){
     curalphas<-E(newalphas, sources)
     newalphas<-M_basic(curalphas, sources, sink)
-    #print(paste("length newalphas: ", length(newalphas)))
-    #print(paste("new alphas: ", newalphas))
     m_guesses<-c(m_guesses, newalphas[1])
-    #print(paste("length mguess: ", length(m_guesses)))
-    #print(paste("itr: ", itr))
-    #print(paste("New alphas: ", newalphas[1]))
-    #newll<-LL(alphas=newalphas,sources=sources, sink=sink)
-    #print(paste("newlikelihood: ", LL(alphas = newalphas, sources = sources, sink = sink)))
-    #print(paste("guessprev: ", m_guesses[length(m_guesses)], "guesscur: ", m_guesses[length(m_guesses)-1]))
     if(abs(m_guesses[length(m_guesses)]-m_guesses[length(m_guesses)-1])<=10^-6) break
-    #prevll<-newll
-  }         #                             this will return epsilon
+ 
+  }        
   toret<-c(newalphas)
   return(toret)
 }
@@ -239,7 +246,7 @@ rarefy <- function(x,maxdepth){
 }
 
 "read_pseudo_data"<-function(dataset){
-  path_to_data<-"~/Dropbox/Source Tracking/Published_Data/"
+  path_to_data<-"../data/"
   if(dataset=="DA"){
     df<-read.table(paste0(path_to_data,"DA_99_T_d10000_date_nan.txt"), fill = NA)
     return(df[complete.cases(df),])
@@ -255,7 +262,6 @@ rarefy <- function(x,maxdepth){
 }
 
 create_m <- function(num_sources, n, EPSILON){
-  
   
   
   if( n == 1 ){
@@ -287,8 +293,6 @@ create_m <- function(num_sources, n, EPSILON){
   
   if( n == 3 ){
     
-    
-    
     index = sample(c(1:num_sources), 3)
     m_1 = runif(min = 0.1, max = 0.5, n = 1)
     m_2 = runif(min = 0.2, max = 0.25, n = 1)
@@ -303,12 +307,14 @@ create_m <- function(num_sources, n, EPSILON){
   }
   subsum = 0
   idx = 1:length(m)
-  while (subsum < EPSILON){
+  
+  while ((subsum+0.001) < EPSILON){
     tosub = EPSILON - subsum
     tosub = tosub / (num_sources+1)
     mask = m > tosub
     m[mask] = m[mask] - tosub
     subsum = subsum + length(m[mask]) * tosub
+    
   }
   m = c(m,(EPSILON))
   
@@ -317,78 +323,9 @@ create_m <- function(num_sources, n, EPSILON){
   
 }
 
-# unknown_initialize_1 <- function(sources, sink, n_sources){
-#   
-#   # sources = totalsource[c(1:n_sources),]
-#   # sink = as.numeric(sinks[1,])
-#   
-#   unknown_source = rep(0, length(sink))
-#   
-#   #zero all the OTUs with at least 1 known source
-#   sources_sum = apply(sources, 2 ,sum)
-#   ind_known_source_abun = which(sources_sum > 0)
-#   unknown_source[ind_known_source_abun] = 0
-#   
-#   
-#   #Select the cor OTUs
-#   ind_cor = list()
-#   ind_known_source_abun = c()
-#   ind_cor_all = which(sources[1,] > 0)
-#   
-#   counter = matrix(0, ncol = dim(sources)[2], nrow =  dim(sources)[1])
-#   
-#   
-#   for(j in 1:n_sources){
-#     
-#     ind_cor[[j]] = which(sources[j,] > 0)
-#     
-#     for(k in 1:length(sources[j,])){
-#       
-#       if(sources[j,k] > 0){
-#         
-#         counter[j,k] = counter[j,k]+1
-#       }
-#       
-#       
-#     }
-#     
-#   }
-#   
-#   OTU_present_absent = apply(counter, 2, sum)
-#   ind_cor_all = which(OTU_present_absent >= round(n_sources*0.8))
-#   
-#   if(length(ind_cor_all) > 1){
-#     
-#     cor_abundance = apply(sources[,ind_cor_all], 2, median) #take the median abundnace of the 'cor'
-#     unknown_source[ind_cor_all] = cor_abundance
-#     
-#   }
-#   
-#   
-#   
-#   #keep the sink abundance where there is no known source
-#   ind_no_known_source_abun = which(sources_sum == 0)
-#   
-#   for(j in 1:length(ind_no_known_source_abun)){
-#     
-#     # unknown_source[ind_no_known_source_abun[j]] = max(runif(n = 1, min = 1, max = 100), sink[ind_no_known_source_abun[j]])
-#     unknown_source[ind_no_known_source_abun[j]] = max( round(sink[ind_no_known_source_abun[j]]+ rnorm(n = length(sink[ind_no_known_source_abun[j]]))), 0)
-#     
-#   }
-#   
-#   
-#   
-#   return(unknown_source)
-#   
-# }
-# 
-# 
-# 
+
 unknown_initialize <- function(sources, sink, n_sources){
   
-  # sources = totalsource[c(1:n_sources),];
-  # sink = as.numeric(sinks[1,]);
-  # n_sources = n_sources
   
   unknown_source = rep(0, length(sink))
   sum_sources = apply(sources, 2, sum)
@@ -400,48 +337,7 @@ unknown_initialize <- function(sources, sink, n_sources){
     unknown_source[j] = max(sink[j]-sum_sources[j], 0)
     
   }
-  
-  
-  # is.cor<- function(vec, n = (n_sources-1)){
-  #
-  #   if(length(which(vec > 0)) >= n)
-  #     return(1)
-  #   else
-  #     return(0)
-  # }
-  #
-  # cor_ind = apply(sources, 2, is.cor)
-  #
-  # cor_index = which(cor_ind > 0)
-  #
-  # cor_abundance = round(apply(sources[,cor_index], 2, median)) #take the median abundnace of the 'cor'
-  # unknown_source[cor_index] = cor_abundance
-  
-  #Select the cor OTUs
-  # ind_cor = list()
-  # ind_known_source_abun = c()
-  # ind_cor_all = which(sources[1,] > 0)
-  # for(j in 1:n_sources){
-  #
-  #   ind_cor[[j]] = which(sources[j,] > 0)
-  #
-  #
-  #   if(j > 1){
-  #
-  #     tmp = ind_cor_all
-  #     ind_cor_all = intersect(ind_cor_all ,ind_cor[[j]])
-  #
-  #   }
-  # }
-  #
-  # cor_abundance = apply(sources[,ind_cor_all], 2, median) #take the median abundnace of the 'cor'
-  # unknown_source[ind_cor_all] = cor_abundance
-  
-  # unknown_source = t(unknown_source)
-  
-  # Data = data.frame(t(sources), unknown_source ,sink)
-  # str(Data)
-  # View(Data)
+
   
   return(unknown_source)
   
@@ -455,8 +351,7 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
   
   #zero all the OTUs with at least 1 known source
   sources_sum = apply(sources, 2 ,sum)
-  # ind_known_source_abun = which(sources_sum > 0)
-  # unknown_source[ind_known_source_abun] = 0
+
   
   
   # unknown_source = rep(0, length(sink))
@@ -520,12 +415,77 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
   
 }
 
+unknown__initialize_1 <- function(sources, sink, n_sources){
+  
+  # sources = totalsource[c(1:n_sources),]
+  # sink = as.numeric(sinks[1,])
+  
+  unknown_source = rep(0, length(sink))
+  
+  #zero all the OTUs with at least 1 known source
+  sources_sum = apply(sources, 2 ,sum)
+  ind_known_source_abun = which(sources_sum > 0)
+  unknown_source[ind_known_source_abun] = 0
+  
+  
+  #Select the cor OTUs
+  ind_cor = list()
+  ind_known_source_abun = c()
+  ind_cor_all = which(sources[1,] > 0)
+  
+  counter = matrix(0, ncol = dim(sources)[2], nrow =  dim(sources)[1])
+  
+  
+  for(j in 1:n_sources){
+    
+    ind_cor[[j]] = which(sources[j,] > 0)
+    
+    for(k in 1:length(sources[j,])){
+      
+      if(sources[j,k] > 0){
+        
+        counter[j,k] = counter[j,k]+1
+      }
+      
+      
+    }
+    
+  }
+  
+  OTU_present_absent = apply(counter, 2, sum)
+  ind_cor_all = which(OTU_present_absent >= round(n_sources*0.8))
+  
+  if(length(ind_cor_all) > 1){
+    
+    cor_abundance = apply(sources[,ind_cor_all], 2, median) #take the median abundnace of the 'cor'
+    unknown_source[ind_cor_all] = cor_abundance
+    
+  }
+  
+  
+  
+  #keep the sink abundance where there is no known source
+  ind_no_known_source_abun = which(sources_sum == 0)
+  
+  for(j in 1:length(ind_no_known_source_abun)){
+    
+    # unknown_source[ind_no_known_source_abun[j]] = max(runif(n = 1, min = 1, max = 100), sink[ind_no_known_source_abun[j]])
+    unknown_source[ind_no_known_source_abun[j]] = max( round(sink[ind_no_known_source_abun[j]]+ rnorm(n = length(sink[ind_no_known_source_abun[j]]))), 0)
+    
+  }
+  
+  
+  
+  return(unknown_source)
+  
+}
 
-EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T, COVERAGE){
+
+
+EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T, COVERAGE,
+                      unknown_initialize = 0){
   
-  # 
-  # source=sources_data; sinks = sink_data; env= rownames(sources_data); em_itr = EM_ITERATIONS; include_epsilon = T; COVERAGE = COVERAGE
-  
+    
   tmp = source
   test_zeros = apply(tmp, 1, sum)
   ind_to_use = as.numeric(which(test_zeros > 0))
@@ -575,10 +535,16 @@ EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env =
     
     # unknown_source = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
     #                                     n_sources = num_sources)
-    
-    unknown_source = unknown_initialize_1(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
+    if(unknown_initialize == 1)
+      unknown_source_1 = unknown_initialize_1(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
                                           n_sources = num_sources)
-    # unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 0.5)
+    
+    
+    if(unknown_initialize == 0)
+      unknown_source_1 = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
+                                          n_sources = num_sources)
+
+      unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 0.5)
     # unknown_source = rpois(n = length(sinks_rarefy), lambda = 1)
     
     # unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1])
@@ -603,14 +569,6 @@ EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env =
   observed_samps <- samps
   observed_samps[[(num_sources + 1)]] = t(rep(0, dim(samps[[1]])[2]))
   
-  
-  #Calculate JSD value
-  # x <- totalsource[c(1:num_sources),]
-  # JSDMatrix <- jsdmatrix(x)
-  # JSDMatrix <- JSDMatrix/COVERAGE
-  # JS = mean(JSDMatrix[-which(JSDMatrix == 0)])
-  # js_values = append(js_values, JS)
-  # print(js_values)
   
   initalphs<-runif(num_sources+1, 0.0, 1.0)
   initalphs=initalphs/Reduce("+", initalphs)
@@ -658,158 +616,8 @@ EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env =
 }
 
 
-# EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data)){
-#   
-#   
-#   # source = sources_data;
-#   # sinks = sinks
-#   
-#   tmp = source
-#   
-#   test_zeros = apply(tmp, 1, sum)
-#   ind_to_use = as.numeric(which(test_zeros > 0))
-#   ind_zero = as.numeric(which(test_zeros == 0))
-#   
-#   source = tmp[ind_to_use,]
-#   sinks = sinks
-#   
-#   
-#   
-#   #####adding support for multiple sources#####
-#   totalsource<-source
-#   totalsource<-as.matrix(totalsource)
-#   sources <- split(totalsource, seq(nrow(totalsource)))
-#   sources<-lapply(sources, as.matrix)
-#   dists<-lapply(sources, function(x) x/(sum(colSums(x))))
-#   totaldist<-t(Reduce("cbind", dists))
-#   sinks<-matrix(sinks, nrow = 1, ncol = dim(totalsource)[2])
-#   
-#   num_sources = dim(source)[1]
-#   envs_simulation = c(1:(num_sources))
-#   
-#   source_old = source
-#   totalsource_old = totalsource
-#   
-#   source_old=lapply(source_old,t)
-#   source_old<- split(totalsource_old, seq(nrow(totalsource_old)))
-#   source_old<-lapply(source_old, as.matrix)
-#   
-#   #Creating the unknown source per mixing iteration
-#   if(include_epsilon == TRUE){
-#     
-#     ##Adding the initial value of the unknown source for CLS and EM
-#     source_2 = list()
-#     totalsource_2 = matrix(NA, ncol = dim(totalsource_old)[2], nrow = ( dim(totalsource_old)[1] + 1))
-#     
-#     for(j in 1:num_sources){
-#       
-#       source_2[[j]] = source_old[[j]]
-#       totalsource_2[j,] = totalsource_old[j,]
-#     }
-#     
-#     #create unknown for each sink i
-#     
-#     sinks_rarefy = rarefy(matrix(sinks, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1]) #make
-#     
-#     
-#     # unknown_source = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
-#     #                                     n_sources = num_sources)
-#     
-#     unknown_source = unknown_initialize_1(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
-#                                           n_sources = num_sources)
-#     # unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 1)
-#     # unknown_source = rpois(n = length(sinks_rarefy), lambda = 1)
-#     
-#     # unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1])
-#     unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
-#     source_2[[j+1]] = t(unknown_source_rarefy)
-#     totalsource_2[(j+1),] = t(unknown_source_rarefy)
-#     totalsource = totalsource_2
-#     
-#     source=lapply(source_2,t)
-#     # totalsource <- rarefy(x = totalsource, maxdepth = COVERAGE)  
-#     source<- split(totalsource, seq(nrow(totalsource_2)))
-#     source<-lapply(source_2, as.matrix)
-#     
-#     envs_simulation <- c(1:(num_sources+1))
-#     
-#   }
-#   
-#   
-#   samps <- source
-#   samps<-lapply(samps, t)
-#   
-#   observed_samps <- samps
-#   observed_samps[[(num_sources + 1)]] = t(rep(0, dim(samps[[1]])[2]))
-#   
-#   
-#   #Calculate JSD value
-#   # x <- totalsource[c(1:num_sources),]
-#   # JSDMatrix <- jsdmatrix(x)
-#   # JSDMatrix <- JSDMatrix/COVERAGE
-#   # JS = mean(JSDMatrix[-which(JSDMatrix == 0)])
-#   # js_values = append(js_values, JS)
-#   # print(js_values)
-#   
-#   initalphs<-runif(num_sources+1, 0.0, 1.0)
-#   initalphs=initalphs/Reduce("+", initalphs)
-#   sink_em = as.matrix(sinks)
-#   em_start_time<-as.numeric(proc.time()[3])
-#   pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
-#   
-#   em_results<-c(em_results, pred_em)
-#   em_rts=c(em_rts, as.numeric(proc.time()[3])-em_start_time)
-#   emnoise_start_time<-as.numeric(proc.time()[3])
-#   tmp<-do_EM(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr, observed=observed_samps)
-#   pred_emnoise = tmp$toret
-#   
-#   k = 1
-#   pred_emnoise_all = c()
-#   pred_em_all = c()
-#   
-#   for(j in 1:length(env)){
-#     
-#     if(j %in% ind_to_use){
-#       
-#       pred_emnoise_all[j] = pred_emnoise[k]
-#       pred_em_all[j] = pred_em[k]
-#       k = k+1
-#       
-#     }
-#     
-#     else{
-#       
-#       pred_emnoise_all[j] = 0
-#       pred_em_all[j] = 0
-#     }
-#     
-#   }
-#   
-#   pred_emnoise_all[j+1] = pred_emnoise[k]
-#   pred_em_all[j+1] = pred_em[k]
-#   
-#   emnoise_rts=c(emnoise_rts, as.numeric(proc.time()[3])-emnoise_start_time)
-#   emnoise_results=c(emnoise_results, pred_emnoise)
-#   
-#   
-#   
-#   names(pred_emnoise_all) = c(env,"unknown")
-#   names(pred_em_all) = c(env,"unknown")
-#   
-#   
-#   Results = list(unknown_source = unknown_source, unknown_source_rarefy = unknown_source_rarefy, 
-#                  data_prop = data.frame(pred_emnoise_all,pred_em_all))
-#   return(Results)
-#   
-# }
-
 create_CI_EM <- function(totalsource_orig, sinksCI, pred_emnoise, num_sources, bootstrapping_iterations, include_epsilon = T, n_cores = 8,EM_ITERATIONS){
   
-  # totalsource_orig = CI_em_source;
-  # sinksCI = sink;
-  # pred_emnoise = pred_emnoise
-  # bootstrapping_iterations = 10
-  # num_sources=nrow(CI_em_source)-1
   em_itr=EM_ITERATIONS
   
   
@@ -1001,10 +809,6 @@ create_CI_EM_2 <- function(totalsource_orig, sinksCI, pred_emnoise, num_sources,
 
 create_CI_CLS <- function(totalnew_source, sinks, pred_emnoise, bootstrapping_iterations){
   
-  # totalnew_source = totalsource;
-  # sinks = sinks; 
-  # pred_emnoise = pred_emnoise;
-  # bootstrapping_iterations = 100
   
   n_cores<-8
   cl<- makeCluster(n_cores)
@@ -1077,11 +881,6 @@ create_CI_CLS <- function(totalnew_source, sinks, pred_emnoise, bootstrapping_it
 
 plot_pie_chart <- function(source_prop, source_label, plot_name, CI){
   
-  
-  # source_prop = c(results$proportions, as.numeric(pred_emnoise))
-  # source_label = c(rep(c(as.character(unique(envs)), "Unknown"), 2))
-  # plot_name = paste(metadata[k[it] ,1], metadata[k[it] ,2] ,length(which(sinks > 0)), "OTUs"
-  #                   , "depth", sum(sinks), sep = "_")
   
   blank_theme <- theme_minimal()+
     theme(
@@ -1171,11 +970,6 @@ plot_pie_chart <- function(source_prop, source_label, plot_name, CI){
 plot_pie_chart_new <- function(source_prop, source_label, plot_name, CI){
   
   
-  # source_label = c(rep(c(as.character(unique(envs)), "Unknown"), 2))
-  # source_prop = c(results$proportions, as.numeric(pred_emnoise))
-  # source_prop = source_prop; source_label = source_label; 
-  # plot_name = paste(metadata[k[it] ,1], metadata[k[it] ,2] ,length(which(sinks > 0)), "OTUs"
-  #                   , "depth", sum(sinks), sep = "_"); CI = CI
   
   blank_theme <- theme_minimal()+
     theme(
@@ -1203,19 +997,6 @@ plot_pie_chart_new <- function(source_prop, source_label, plot_name, CI){
   }
   
   
-  # for(j in 1:length(source_label[6:10])){
-  # 
-  #   if(j <= (num_sources+1)){
-  # 
-  #     source_label[j] = round(source_prop[j], 4)
-  #   }
-  # 
-  #   source_label[j+num_sources+1] = paste(source_label[j+num_sources+1], " ", round(source_prop[j+num_sources+1], 4)," [",
-  #                                         round(CI$CI_L[j], 4), ", ",
-  #                                         round(CI$CI_H[j], 4), "]", sep = "")
-  # }
-  # source_label <- stri_pad_both(source_label, width = max(stri_width(source_label)))
-  
   
   dat = data.frame(count=source_prop[1:5]*100, category=source_label[1:5])
   dat$fraction = round(dat$count / sum(dat$count), 3)
@@ -1242,11 +1023,6 @@ plot_pie_chart_new <- function(source_prop, source_label, plot_name, CI){
     theme(panel.grid=element_blank()) +
     theme(axis.text=element_blank()) +
     theme(axis.ticks=element_blank()) +
-    # theme(legend.title = element_text(size=16, face="bold")) +
-    # theme(legend.text = element_text(size = 14, face = "bold")) +  
-    # theme(legend.position=c(1, 0)) +
-    # geom_label(aes(label=paste(fraction*100,"%"),x=3.5,y=(ymin+ymax)/2),inherit.aes = TRUE, 
-    #            show.legend = FALSE) 
     geom_label_repel(aes(label=paste(fraction*100,"%"),
                          x=3.5,y=(ymin+ymax)/2),inherit.aes = TRUE, 
                      show.legend = FALSE) 
@@ -1348,109 +1124,5 @@ plot_pie_chart_new <- function(source_prop, source_label, plot_name, CI){
   
 }
 
-# EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data)){
-#   
-#   # source = sources_data
-#   # sinks = sinks
-#   
-#   #####adding support for multiple sources#####
-#   totalsource<-source
-#   totalsource<-as.matrix(totalsource)
-#   sources <- split(totalsource, seq(nrow(totalsource)))
-#   sources<-lapply(sources, as.matrix)
-#   dists<-lapply(sources, function(x) x/(sum(colSums(x))))
-#   totaldist<-t(Reduce("cbind", dists))
-#   sinks<-matrix(sinks, nrow = 1, ncol = dim(totalsource)[2])
-#   
-#   num_sources = dim(source)[1]
-#   envs_simulation = c(1:(num_sources))
-#   
-#   source_old = source
-#   totalsource_old = totalsource
-#   
-#   source_old=lapply(source_old,t)
-#   source_old<- split(totalsource_old, seq(nrow(totalsource_old)))
-#   source_old<-lapply(source_old, as.matrix)
-#   
-#   #Creating the unknown source per mixing iteration
-#   if(include_epsilon == TRUE){
-#     
-#     ##Adding the initial value of the unknown source for CLS and EM
-#     source_2 = list()
-#     totalsource_2 = matrix(NA, ncol = dim(totalsource_old)[2], nrow = ( dim(totalsource_old)[1] + 1))
-#     
-#     for(j in 1:num_sources){
-#       
-#       source_2[[j]] = source_old[[j]]
-#       totalsource_2[j,] = totalsource_old[j,]
-#     }
-#     
-#     #create unknown for each sink i
-#     
-#     sinks_rarefy = rarefy(matrix(sinks, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1]) #make
-#     
-#     
-#     # unknown_source = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
-#     #                                     n_sources = num_sources)
-#     
-#     unknown_source = unknown_initialize_1(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
-#                                           n_sources = num_sources)
-#     # unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 1)
-#     # unknown_source = rpois(n = length(sinks_rarefy), lambda = 1)
-#     
-#     # unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1])
-#     unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
-#     source_2[[j+1]] = t(unknown_source_rarefy)
-#     totalsource_2[(j+1),] = t(unknown_source_rarefy)
-#     totalsource = totalsource_2
-#     
-#     source=lapply(source_2,t)
-#     # totalsource <- rarefy(x = totalsource, maxdepth = COVERAGE)  
-#     source<- split(totalsource, seq(nrow(totalsource_2)))
-#     source<-lapply(source_2, as.matrix)
-#     
-#     envs_simulation <- c(1:(num_sources+1))
-#     
-#   }
-#   
-#   
-#   samps <- source
-#   samps<-lapply(samps, t)
-#   
-#   observed_samps <- samps
-#   observed_samps[[(num_sources + 1)]] = t(rep(0, dim(samps[[1]])[2]))
-#   
-#   
-#   #Calculate JSD value
-#   # x <- totalsource[c(1:num_sources),]
-#   # JSDMatrix <- jsdmatrix(x)
-#   # JSDMatrix <- JSDMatrix/COVERAGE
-#   # JS = mean(JSDMatrix[-which(JSDMatrix == 0)])
-#   # js_values = append(js_values, JS)
-#   # print(js_values)
-#   
-#   initalphs<-runif(num_sources+1, 0.0, 1.0)
-#   initalphs=initalphs/Reduce("+", initalphs)
-#   sink_em = as.matrix(sinks)
-#   em_start_time<-as.numeric(proc.time()[3])
-#   pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
-#   
-#   em_results<-c(em_results, pred_em)
-#   em_rts=c(em_rts, as.numeric(proc.time()[3])-em_start_time)
-#   emnoise_start_time<-as.numeric(proc.time()[3])
-#   tmp<-do_EM(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr, observed=observed_samps)
-#   pred_emnoise = tmp$toret
-#   
-#   
-#   emnoise_rts=c(emnoise_rts, as.numeric(proc.time()[3])-emnoise_start_time)
-#   emnoise_results=c(emnoise_results, pred_emnoise)
-#   
-#   names(pred_emnoise) = c(env,"unknown")
-#   names(pred_em) = c(env,"unknown")
-#   
-#   
-#   
-#   return(data.frame(pred_emnoise,pred_em))
-#   
-# }
+
 
