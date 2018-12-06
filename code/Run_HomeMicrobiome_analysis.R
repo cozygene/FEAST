@@ -36,7 +36,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   source("SourceTracker.R")
   source("src.R")
   
-  EM_ITERATIONS<-1000
+  EM_ITERATIONS<-100
   include_epsilon <- T
 
   all_study_metadata <- read.table(paste0("../data/house",house_number,"_study_metadata.txt"),h=T,sep="\t",check=F,stringsAsFactors = FALSE)
