@@ -57,7 +57,7 @@ COVERAGE = min(rowSums(Healthy_sources_icu))
 #sink = ICU ----
 st_flag = 0
 em_flag = 1
-EM_ITERATIONS = 500
+EM_ITERATIONS = 100
 healthy_flag = 0
 icu_flag = 1
 N = dim(Healthy_sources_icu)[1]
@@ -156,7 +156,7 @@ for(samp in sinks_icu_mapping[start_ind:Num_ind]){
 
 st_flag = 0
 em_flag = 1
-EM_ITERATIONS = 500
+EM_ITERATIONS = 100
 healthy_flag = 1
 icu_flag = 0
 N = dim(Healthy_sources_healthy)[1]
