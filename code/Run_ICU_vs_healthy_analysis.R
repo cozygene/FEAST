@@ -129,8 +129,6 @@ for(samp in sinks_icu_mapping[start_ind:Num_ind]){
     
     if(icu_flag == 1){
       
-      # em_results_icu_feces_new = c()
-      # em_noise_results_icu_feces_new = c()
       
       
       for(k in 1:length(Type_uniq)){
@@ -143,7 +141,6 @@ for(samp in sinks_icu_mapping[start_ind:Num_ind]){
       
       
       print(Type_uniq)
-      # print(em_results_icu_feces_new[i,])
       print("ICU")
       print(em_noise_results_icu_feces_new[i,])
       i = i+1
@@ -221,7 +218,6 @@ for(samp in sinks_healthy_mapping[start_ind:Num_ind]){
       
       
       print(Type_uniq)
-      # print(em_results_healthy[i,])
       print("healthy")
       print(em_noise_results_healthy[i,])
       i = i+1
