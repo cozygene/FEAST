@@ -63,7 +63,6 @@ for(it in 1:length(Ids)){
   print("Source mixing proportions")
   print(Proportions_est[[it]])
   
-  Proportions_est_data = data.frame(unlist(Proportions_est))
   
 
 }
