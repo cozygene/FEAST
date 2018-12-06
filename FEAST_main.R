@@ -29,20 +29,11 @@ if(length(common.sample.ids) <= 1) {
 }
 
 
-# Extract the source environments and source/sink indices
 
-# train.ix <- which(metadata$SourceSink=='source')
-# test.ix <- which(metadata$SourceSink=='sink')
-# if(is.element('Description',colnames(metadata))) desc <- metadata$Description
-
-
-EM_iterations = 1000
+EM_iterations = 100
 envs <- metadata$Env
 Ids <- unique(metadata$id)
 Proportions_est <- list()
-
-
-
 
 for(it in 1:length(Ids)){
   
@@ -71,6 +62,8 @@ for(it in 1:length(Ids)){
   names(Proportions_est[[it]]) <- c(as.character(envs[train.ix]), "unknown")
   print("Source mixing proportions")
   print(Proportions_est[[it]])
+  
+  Proportions_est_data = data.fram(unlist(Proportions_est))
   
 
 }
