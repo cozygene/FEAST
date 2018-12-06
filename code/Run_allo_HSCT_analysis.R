@@ -178,7 +178,6 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
         sources = totalnew_source
         rownames(sources) = c(1:dim(sources)[1])
         
-        # COVERAGE = min(rowSums(sources))
         sources<-rarefy(sources, COVERAGE)
         sink<-as.matrix(rarefy(sink, COVERAGE))
         
@@ -197,7 +196,6 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
         #Domination event
         sink <- t(as.matrix(otus[day == tmp$day[D+1] & patiendId == l,]))
         sources = as.matrix(otus[day < tmp$day[D+1] & patiendId == l,])
-        # str(sources)
         
         COVERAGE = 10000
         totalsource<-sources
@@ -277,8 +275,6 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
 
   
   toplot_Before_D <- unknown_dist_BD_AD[unknown_dist_BD_AD$BD_AD == 0,]
-  # toplot_Delivery_1.melt <- melt(toplot_Delivery_1, variable.name= "Origin",
-  #                                value.name = "Proportion")
   
   
   toplot_Before_plot <- ggplot(toplot_Before_D, aes(x= BD_AD, y = unknown_source_proportion)) + 
@@ -286,8 +282,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   
   
   toplot_After_D <- unknown_dist_BD_AD[unknown_dist_BD_AD$BD_AD == 1,]
-  # toplot_Delivery_1.melt <- melt(toplot_Delivery_1, variable.name= "Origin",
-  #                                value.name = "Proportion")
+
   
   toplot_After_plot <- ggplot(toplot_After_D, aes(x= BD_AD, y = unknown_source_proportion)) + 
     geom_boxplot(show.legend=F) + theme_bw()+ ylim(0,1) + ggtitle("Unknown source distribution after Domination")
