@@ -2,11 +2,11 @@ rm(list = ls())
 gc()
 
 print("Change dir_path")
-dir_path = paste("~/FEAST-master/")
-setwd(paste0(dir_path, "/src"))
+dir_path = paste("~/Dropbox/FEAST-master/")
+setwd(paste0(dir_path, "code"))
 source("src.R")
 
-setwd(paste(dir_path, "Data_files", sep = ""))
+setwd(paste0(dir_path, "Data_files"))
 
 # Load sample metadata
 metadata <- read.csv('metadata_example.txt',h=T, sep = "\t", row.names = 1)
@@ -79,5 +79,5 @@ for(it in 1:length(Ids)){
 
 
 Proportions_est_data = matrix(unlist(Proportions_est), ncol = (num_sources+1), byrow = T)
-colnames(Proportions_est_data) = c(as.character(envs[train.ix]), "unknown")
+colnames(Proportions_est_data) = c("Baby_B", "Baby_4M", "Baby_M", "unknown")
 
