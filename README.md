@@ -6,13 +6,13 @@ FEAST is a scalable method for investigating the compositional patterns  of comp
 
 There are seven analyses in the FEAST paper :
 
-Simulation study (using realistic source distribution from the Earth Microbiome Project).
-Sequencing depth simulation (using realistic source distribution from the Earth Microbiome Project).
-Unknown source simulation (using realistic source distribution from Lax et al. 2014).
-Baby time series (real data analysis using data from Backhed et al. 2015).
-Home microbiome (real data analysis using data from Lax et al. 2014).
-allo-HSCT (real data analysis using data from Taur et al. 2012).
-ICU vs. Healthy adults (real data analysis using data from McDonald et al. 2016 and the American Gut Project).
+1. Simulation study (using realistic source distribution from the Earth Microbiome Project).//
+2. Sequencing depth simulation (using realistic source distribution from the Earth Microbiome Project).
+3. Unknown source simulation (using realistic source distribution from Lax et al. 2014).
+4. Baby time series (real data analysis using data from Backhed et al. 2015).
+5. Home microbiome (real data analysis using data from Lax et al. 2014).
+6. allo-HSCT (real data analysis using data from Taur et al. 2012).
+7. ICU vs. Healthy adults (real data analysis using data from McDonald et al. 2016 and the American Gut Project).
 
 
 © 2018 Big Data and Genomics Lab at UCLA All Rights Reserved
