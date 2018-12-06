@@ -31,9 +31,6 @@ USESTEP=F
 include_epsilon <- T
 STEPS=4
 
-##  Start the loop. this is going to be for all time points
-##  Comment out SourceTracker when iterating through time points
-##  since the computation will stack, 6 sinks per time points.
 
 metadata<-read.table(paste0("../data/house1_t", 1,"_metadata.tsv"),
                      sep= '\t', header=T, comment='', stringsAsFactors = F)
@@ -67,8 +64,6 @@ otus<-t(otus)
 common_names<-intersect(rownames(metadata), rownames(otus))
 metadata<-metadata[common_names,]
 otus<-otus[common_names,]
-#sinks<-rownames(metadata)[which(metadata$SourceSink == "sink")]
-#sinks<-otus[sinks,]
 sources<-rownames(metadata)[which(metadata$SourceSink == "source")]
 envs<-as.character(metadata[sources, 2])
 sources<-otus[sources,]
@@ -79,7 +74,6 @@ eps_list = seq(0,1,0.05)
 for(eps in eps_list){
 
 print(eps)
-  #for(it in 1:SAMPLINGITERATIONS){
   srcidx<-sample(dim(holdsources)[1], NUMSOURCES)
   sources<-holdsources[srcidx,]
   sources<-rarefy(sources, maxdepth = COVERAGE)
@@ -87,19 +81,16 @@ print(eps)
   unk_source<-rarefy(t(holdsources[sample(seq(1,dim(holdsources)[1])[-srcidx], 1),]), maxdepth=COVERAGE)
   ms<-list()
   sinks<-list()
-  #if(USESTEP == T){
-  
-  #}else{
+
   for(m in 1:MIXINGITERATIONS){
     ms[[m]]<-runif(NUMSOURCES, 0, 1)
     ms[[m]]<-c(ms[[m]], eps*sum(ms[[m]])/(1-eps)) / sum(c(ms[[m]], eps*sum(ms[[m]])/(1-eps)))
     sinks[[m]]<-round(t(ms[[m]]) %*% rbind(sources,unk_source))
   }
-  #}
+
   st<-sourcetracker(sources, envs, COVERAGE)
   sources<-st$sources[-which(rownames(st$sources) == 'Unknown'),]
   sources<-rarefy(sources, COVERAGE)
-  #setwd("Results/")
   js_values<-c()
   x <- sources[c(1:dim(sources)[1]),]
   JSDMatrix <- jsdmatrix(x)
@@ -149,9 +140,7 @@ print(eps)
   }
   
   print(getwd())
-#   saveRDS(feast_df, paste0("/data/Unknown_source_results/unkinit_1_feast_", eps))
-#   saveRDS(st_df, paste0("/data/Unknown_source_results/unkinit_1_st_", eps))
-#   saveRDS(ms, paste0("/data/Unknown_source_results/unkinit_1_ms_", eps))
+
 
 
 }
