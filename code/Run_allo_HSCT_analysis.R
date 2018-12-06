@@ -37,7 +37,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   colnames(otus) = paste0(patiendId,"_", day)
   otus = t(otus)
  
-  EM_ITERATIONS = 500
+  EM_ITERATIONS = 100
   
   day_after = c()
   ind_after = c()
