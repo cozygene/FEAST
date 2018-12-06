@@ -116,8 +116,6 @@ for (it in 1:itr){
   ep_values<-rep(0, mixing_iterations)
   
   
-  ######change_C(X = totalnew_source[1,], newcov = COVERAGE) dont uncomment
-  
   ##Known sources
   
   print("Known sources")
@@ -375,9 +373,6 @@ for (it in 1:itr){
   epsource<-rpois(n = length(totalsource[1,]), lambda = 10) #use a different source for the unknown 
   epdist<-epsource/(sum(epsource))
   
-  # epsource<-source[sample(1:dim(source)[1],1,F),]
-  # epdist<-epsource/(sum(colSums(epsource)))
-  
   
   #Adding the unknown source
 
@@ -400,8 +395,6 @@ for (it in 1:itr){
   ep_values<-rep(0, mixing_iterations)
   
   
-  ######change_C(X = totalnew_source[1,], newcov = COVERAGE) dont uncomment
-  
   ##Known sources
   
   print("Known sources")
@@ -411,7 +404,6 @@ for (it in 1:itr){
     new_source[[j]] = t(rmultinom(n = 1, size = sum(totalsource[j,]), prob=totaldist[j,]))
     totalnew_source[j,] = as.numeric(t(rmultinom(n = 1, size = sum(totalsource[j,]), prob=totaldist[j,])))}
   new_source=lapply(new_source,t)
-  # totalnew_source=t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
   totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
   new_source<- split(totalnew_source, seq(nrow(totalnew_source)))
   new_source<-lapply(new_source, as.matrix)
@@ -433,10 +425,7 @@ for (it in 1:itr){
   }
   
   print("ms_mat")
-  #The sink is created using the known and unknown sources (if include_epsilon == TRUE )
   sinks=round(sinks)
-  # sinks=t(apply(sinks, 1, function(x) change_C(COVERAGE, x)))
-  # sinks = rarefy(x = sinks, maxdepth = COVERAGE)
   m_matrices=append(m_matrices, list(mapply(rbind, list_ms)))
   ms_mat=c()
   if(include_epsilon==F){
@@ -446,22 +435,14 @@ for (it in 1:itr){
   }
   
   print("Jensen-Shannon divergence")
-  #Jensen-Shannon divergence calculation - OLD VERSION
-  # weights<-rep(1/num_sources, num_sources)
-  # JS = mult_JSD(as.matrix(totaldist), q=weights); print(cat('jsd: ', JS))
-  # js_values = append(js_values, JS)
-  
   # Jensen-Shannon Divergence between P and Q - new version
-  #x <- totalsource[c(1:num_sources),]
   JSDMatrix <- jsdmatrix(totalnew_source[c(1:num_sources),]) #instead of x
   JSDMatrix <- JSDMatrix/COVERAGE
-  ##not good because the coverage is a huge range...
-  #JSDMatrix<-sapply(1:num_sources, function(z) JSDMatrix[z,]/sum(totalsource[z,]))
+
   JS = mean(JSDMatrix[-which(JSDMatrix == 0)])
   print(JS)
   ###save the JSD values
-  # plot a heatmap of the corresponding JSD matrix
-  # heatmap(JSDMatrix)
+
   
   
   
@@ -473,27 +454,6 @@ for (it in 1:itr){
       
       t = t+1
       js_values = append(js_values, JS) 
-      
-      
-      #############CLS###########
-      
-      
-      #predict_values_cls <- c(); predict_eps_cls<-c(); cls_runtime<-c()
-      #cls_start_time<-as.numeric(proc.time()[3])
-      #bootsource<-matrix(NA,ncol = dim(sources[[1]])[1])
-      #if(bs==T){ ###if we want to use bootstrapping 
-      #  envs_simulation<-c()
-      #  for(i in 1:length(sources)){
-      #    bootsource=rbind(bootsource,t(as.matrix(sources[[i]])))
-      #    bootsource=rbind(bootsource, t(
-      #      rmultinom(n = 99, size = sum(totalnew_source[i,]), prob=totalnew_dist[i,])))
-      #    envs_simulation=c(envs_simulation, rep(i, 100))
-      #  }
-      #  totalnew_source<-bootsource[complete.cases(bootsource),]
-      #  rownames(totalnew_source)<-make.names(rownames(totalnew_source), unique = T)
-      #  envs_simulation=factor(envs_simulation)
-      #}
-      
       new_source_old = new_source
       totalnew_source_old = totalnew_source
       
@@ -506,8 +466,7 @@ for (it in 1:itr){
       }else{
         ms_mat <-  matrix(unlist(list_ms), nrow = mixing_iterations, ncol = num_sources+1, byrow = T)
       }
-      
-      #############CLS END#############
+
       
       
       #############EM###########
@@ -556,40 +515,25 @@ for (it in 1:itr){
           totalnew_source = totalnew_source_2
           
           new_source=lapply(new_source_2,t)
-          # totalnew_source <- t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
           totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
           new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
           new_source<-lapply(new_source, as.matrix)
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]))
-          
           envs_simulation <- c(1:(num_sources+1))
           
-          # View(data.frame(t(totalnew_source), sinks[i,]) )
         }
         
         samps <- list()
         samps <- new_source
         samps<-lapply(samps, t)
         
-        # num_sources = 5
         observed_samps <- samps
         observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
+
         
-        # observed_samps[[(num_sources + 1)]] = t(rpois(lambda = 2,n = dim(samps[[1]])[2]))
-        
-        # observed_samps<-lapply(observed_samps, t)
-        # str(observed_samps)
-        
-        # View(data.frame(t(totalsource),  sinks[1,]))
-        
-        
-        # num_sources = 5
         if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
         }else {initalphs<-runif(num_sources, 0.0, 1.0)}
         initalphs=initalphs/Reduce("+", initalphs)
         m_s<-unlist(list_ms[[i]])
-        # if(clsinit==T){initalphs<-c(predict_values_cls[i], 1-predict_values_cls[i])}
         sink=t(as.matrix(sinks[i,]))
         em_start_time<-as.numeric(proc.time()[3])
         pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink, iterations=em_iterations)
@@ -735,15 +679,7 @@ for (it in 1:itr){
           #create unknown for each sink i
           unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                               n_sources = n_sources) 
-          # new_source_2[[j+1]] = unknown_source
-          # totalnew_source_2[(j+1),] = unknown_source
-          # plot(as.numeric(unknown_source))
-          
-          # tmp_unk = change_C(newcov = COVERAGE, X = unknown_source)
-          # tmp_unk =  rarefy(x = unknown_source, maxdepth = COVERAGE)
-          # unknown_source = tmp_unk
-          # new_source_2[[j+1]] = t(round(unknown_source))
-          # source_2[[j+1]] = round(unknown_source)
+
           new_source_2[[j+1]] = round(unknown_source)
           totalnew_source_2[(j+1),] = round(unknown_source)
           
@@ -751,40 +687,24 @@ for (it in 1:itr){
           totalnew_source = totalnew_source_2
           
           new_source=lapply(new_source_2,t)
-          # totalnew_source <- t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
           totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
           new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
           new_source<-lapply(new_source, as.matrix)
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]))
-          
           envs_simulation <- c(1:(num_sources+1))
           
-          # View(data.frame(t(totalnew_source), sinks[i,]) )
         }
         
         samps <- list()
         samps <- new_source
         samps<-lapply(samps, t)
-        
-        # num_sources = 5
         observed_samps <- samps
         observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
+
         
-        # observed_samps[[(num_sources + 1)]] = t(rpois(lambda = 2,n = dim(samps[[1]])[2]))
-        
-        # observed_samps<-lapply(observed_samps, t)
-        # str(observed_samps)
-        
-        # View(data.frame(t(totalsource),  sinks[1,]))
-        
-        
-        # num_sources = 5
         if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
         }else {initalphs<-runif(num_sources, 0.0, 1.0)}
         initalphs=initalphs/Reduce("+", initalphs)
         m_s<-unlist(list_ms[[i]])
-        # if(clsinit==T){initalphs<-c(predict_values_cls[i], 1-predict_values_cls[i])}
         sink=t(as.matrix(sinks[i,]))
         em_start_time<-as.numeric(proc.time()[3])
         pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink, iterations=em_iterations)
@@ -901,15 +821,11 @@ for (it in 1:itr){
   totaldist<-t(Reduce("cbind", dists))
   
   
-  # print(str(totalsource))
-  
+
   print("Adding the unknown source")
   epsource<-rpois(n = length(totalsource[1,]), lambda = 10) #use a different source for the unknown 
   epdist<-epsource/(sum(epsource))
-  
-  # epsource<-source[sample(1:dim(source)[1],1,F),]
-  # epdist<-epsource/(sum(colSums(epsource)))
-  
+
   
   #Adding the unknown source
 
@@ -932,8 +848,7 @@ for (it in 1:itr){
   ep_values<-rep(0, mixing_iterations)
   
   
-  ######change_C(X = totalnew_source[1,], newcov = COVERAGE) dont uncomment
-  
+
   ##Known sources
   
   print("Known sources")
@@ -943,7 +858,6 @@ for (it in 1:itr){
     new_source[[j]] = t(rmultinom(n = 1, size = sum(totalsource[j,]), prob=totaldist[j,]))
     totalnew_source[j,] = as.numeric(t(rmultinom(n = 1, size = sum(totalsource[j,]), prob=totaldist[j,])))}
   new_source=lapply(new_source,t)
-  # totalnew_source=t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
   totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
   new_source<- split(totalnew_source, seq(nrow(totalnew_source)))
   new_source<-lapply(new_source, as.matrix)
@@ -965,10 +879,7 @@ for (it in 1:itr){
   }
   
   print("ms_mat")
-  #The sink is created using the known and unknown sources (if include_epsilon == TRUE )
   sinks=round(sinks)
-  # sinks=t(apply(sinks, 1, function(x) change_C(COVERAGE, x)))
-  # sinks = rarefy(x = sinks, maxdepth = COVERAGE)
   m_matrices=append(m_matrices, list(mapply(rbind, list_ms)))
   ms_mat=c()
   if(include_epsilon==F){
@@ -978,22 +889,14 @@ for (it in 1:itr){
   }
   
   print("Jensen-Shannon divergence")
-  #Jensen-Shannon divergence calculation - OLD VERSION
-  # weights<-rep(1/num_sources, num_sources)
-  # JS = mult_JSD(as.matrix(totaldist), q=weights); print(cat('jsd: ', JS))
-  # js_values = append(js_values, JS)
-  
+ 
   # Jensen-Shannon Divergence between P and Q - new version
-  #x <- totalsource[c(1:num_sources),]
   JSDMatrix <- jsdmatrix(totalnew_source[c(1:num_sources),]) #instead of x
   JSDMatrix <- JSDMatrix/COVERAGE
-  ##not good because the coverage is a huge range...
-  #JSDMatrix<-sapply(1:num_sources, function(z) JSDMatrix[z,]/sum(totalsource[z,]))
   JS = mean(JSDMatrix[-which(JSDMatrix == 0)])
   print(JS)
   ###save the JSD values
-  # plot a heatmap of the corresponding JSD matrix
-  # heatmap(JSDMatrix)
+
   
   
   
@@ -1005,27 +908,7 @@ for (it in 1:itr){
       
       t = t+1
       js_values = append(js_values, JS) 
-      
-      
-      #############CLS###########
-      
-      
-      #predict_values_cls <- c(); predict_eps_cls<-c(); cls_runtime<-c()
-      #cls_start_time<-as.numeric(proc.time()[3])
-      #bootsource<-matrix(NA,ncol = dim(sources[[1]])[1])
-      #if(bs==T){ ###if we want to use bootstrapping 
-      #  envs_simulation<-c()
-      #  for(i in 1:length(sources)){
-      #    bootsource=rbind(bootsource,t(as.matrix(sources[[i]])))
-      #    bootsource=rbind(bootsource, t(
-      #      rmultinom(n = 99, size = sum(totalnew_source[i,]), prob=totalnew_dist[i,])))
-      #    envs_simulation=c(envs_simulation, rep(i, 100))
-      #  }
-      #  totalnew_source<-bootsource[complete.cases(bootsource),]
-      #  rownames(totalnew_source)<-make.names(rownames(totalnew_source), unique = T)
-      #  envs_simulation=factor(envs_simulation)
-      #}
-      
+
       new_source_old = new_source
       totalnew_source_old = totalnew_source
       
@@ -1038,8 +921,6 @@ for (it in 1:itr){
       }else{
         ms_mat <-  matrix(unlist(list_ms), nrow = mixing_iterations, ncol = num_sources+1, byrow = T)
       }
-      
-      #############CLS END#############
       
       
       #############EM###########
@@ -1072,15 +953,7 @@ for (it in 1:itr){
           #create unknown for each sink i
           unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                               n_sources = n_sources) 
-          # new_source_2[[j+1]] = unknown_source
-          # totalnew_source_2[(j+1),] = unknown_source
-          # plot(as.numeric(unknown_source))
-          
-          # tmp_unk = change_C(newcov = COVERAGE, X = unknown_source)
-          # tmp_unk =  rarefy(x = unknown_source, maxdepth = COVERAGE)
-          # unknown_source = tmp_unk
-          # new_source_2[[j+1]] = t(round(unknown_source))
-          # source_2[[j+1]] = round(unknown_source)
+
           new_source_2[[j+1]] = round(unknown_source)
           totalnew_source_2[(j+1),] = round(unknown_source)
           
@@ -1092,31 +965,17 @@ for (it in 1:itr){
           totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
           new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
           new_source<-lapply(new_source, as.matrix)
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]))
-          
           envs_simulation <- c(1:(num_sources+1))
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]) )
+
         }
         
         samps <- list()
         samps <- new_source
         samps<-lapply(samps, t)
         
-        # num_sources = 5
         observed_samps <- samps
         observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
         
-        # observed_samps[[(num_sources + 1)]] = t(rpois(lambda = 2,n = dim(samps[[1]])[2]))
-        
-        # observed_samps<-lapply(observed_samps, t)
-        # str(observed_samps)
-        
-        # View(data.frame(t(totalsource),  sinks[1,]))
-        
-        
-        # num_sources = 5
         if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
         }else {initalphs<-runif(num_sources, 0.0, 1.0)}
         initalphs=initalphs/Reduce("+", initalphs)
@@ -1223,27 +1082,6 @@ for (it in 1:itr){
       
       t = t+1
       js_values = append(js_values, JS) 
-      
-      
-      #############CLS###########
-      
-      
-      #predict_values_cls <- c(); predict_eps_cls<-c(); cls_runtime<-c()
-      #cls_start_time<-as.numeric(proc.time()[3])
-      #bootsource<-matrix(NA,ncol = dim(sources[[1]])[1])
-      #if(bs==T){ ###if we want to use bootstrapping 
-      #  envs_simulation<-c()
-      #  for(i in 1:length(sources)){
-      #    bootsource=rbind(bootsource,t(as.matrix(sources[[i]])))
-      #    bootsource=rbind(bootsource, t(
-      #      rmultinom(n = 99, size = sum(totalnew_source[i,]), prob=totalnew_dist[i,])))
-      #    envs_simulation=c(envs_simulation, rep(i, 100))
-      #  }
-      #  totalnew_source<-bootsource[complete.cases(bootsource),]
-      #  rownames(totalnew_source)<-make.names(rownames(totalnew_source), unique = T)
-      #  envs_simulation=factor(envs_simulation)
-      #}
-      
       new_source_old = new_source
       totalnew_source_old = totalnew_source
       
@@ -1257,7 +1095,6 @@ for (it in 1:itr){
         ms_mat <-  matrix(unlist(list_ms), nrow = mixing_iterations, ncol = num_sources+1, byrow = T)
       }
       
-      #############CLS END#############
       
       
       #############EM###########
@@ -1290,15 +1127,7 @@ for (it in 1:itr){
           #create unknown for each sink i
           unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                               n_sources = n_sources) 
-          # new_source_2[[j+1]] = unknown_source
-          # totalnew_source_2[(j+1),] = unknown_source
-          # plot(as.numeric(unknown_source))
-          
-          # tmp_unk = change_C(newcov = COVERAGE, X = unknown_source)
-          # tmp_unk =  rarefy(x = unknown_source, maxdepth = COVERAGE)
-          # unknown_source = tmp_unk
-          # new_source_2[[j+1]] = t(round(unknown_source))
-          # source_2[[j+1]] = round(unknown_source)
+
           new_source_2[[j+1]] = round(unknown_source)
           totalnew_source_2[(j+1),] = round(unknown_source)
           
@@ -1306,35 +1135,19 @@ for (it in 1:itr){
           totalnew_source = totalnew_source_2
           
           new_source=lapply(new_source_2,t)
-          # totalnew_source <- t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
           totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
           new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
           new_source<-lapply(new_source, as.matrix)
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]))
-          
           envs_simulation <- c(1:(num_sources+1))
           
-          # View(data.frame(t(totalnew_source), sinks[i,]) )
         }
         
         samps <- list()
         samps <- new_source
         samps<-lapply(samps, t)
-        
-        # num_sources = 5
         observed_samps <- samps
         observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
-        
-        # observed_samps[[(num_sources + 1)]] = t(rpois(lambda = 2,n = dim(samps[[1]])[2]))
-        
-        # observed_samps<-lapply(observed_samps, t)
-        # str(observed_samps)
-        
-        # View(data.frame(t(totalsource),  sinks[1,]))
-        
-        
-        # num_sources = 5
+
         if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
         }else {initalphs<-runif(num_sources, 0.0, 1.0)}
         initalphs=initalphs/Reduce("+", initalphs)
@@ -1455,16 +1268,11 @@ for (it in 1:itr){
   sources<-lapply(sources, as.matrix)
   dists<-lapply(sources, function(x) x/(sum(colSums(x))))
   totaldist<-t(Reduce("cbind", dists))
-  
-  
-  # print(str(totalsource))
+
   
   epsource<-rpois(n = length(totalsource[1,]), lambda = 10) #use a different source for the unknown 
   epdist<-epsource/(sum(epsource))
-  
-  # epsource<-source[sample(1:dim(source)[1],1,F),]
-  # epdist<-epsource/(sum(colSums(epsource)))
-  
+
   
   #Adding the unknown source
   if(include_epsilon == TRUE){
@@ -1486,8 +1294,7 @@ for (it in 1:itr){
   ep_values<-rep(0, mixing_iterations)
   
   
-  ######change_C(X = totalnew_source[1,], newcov = COVERAGE) dont uncomment
-  
+
   ##Known sources
   new_source = list()
   totalnew_source = matrix(NA, ncol = dim(totalsource)[2], nrow = length(sources))
@@ -1512,10 +1319,8 @@ for (it in 1:itr){
   }
   
   
-  #The sink is created using the known and unknown sources (if include_epsilon == TRUE )
   sinks=round(sinks)
-  # sinks=t(apply(sinks, 1, function(x) change_C(COVERAGE, x)))
-  # sinks = rarefy(x = sinks, maxdepth = COVERAGE)
+
   m_matrices=append(m_matrices, list(mapply(rbind, list_ms)))
   ms_mat=c()
   if(include_epsilon==F){
@@ -1523,24 +1328,13 @@ for (it in 1:itr){
   }else{
     ms_mat <-  matrix(unlist(list_ms), nrow = mixing_iterations, ncol = num_sources+1, byrow = T)
   }
-  
-  
-  #Jensen-Shannon divergence calculation - OLD VERSION
-  # weights<-rep(1/num_sources, num_sources)
-  # JS = mult_JSD(as.matrix(totaldist), q=weights); print(cat('jsd: ', JS))
-  # js_values = append(js_values, JS)
-  
+
   # Jensen-Shannon Divergence between P and Q - new version
-  #x <- totalsource[c(1:num_sources),]
   JSDMatrix <- jsdmatrix(totalnew_source[c(1:num_sources),]) #instead of x
   JSDMatrix <- JSDMatrix/COVERAGE
-  ##not good because the coverage is a huge range...
-  #JSDMatrix<-sapply(1:num_sources, function(z) JSDMatrix[z,]/sum(totalsource[z,]))
   JS = mean(JSDMatrix[-which(JSDMatrix == 0)])
   print(JS)
-  ###save the JSD values
-  # plot a heatmap of the corresponding JSD matrix
-  # heatmap(JSDMatrix)
+
   
   if(start_EMP_flag == 1) {
     
@@ -1564,8 +1358,6 @@ for (it in 1:itr){
       }else{
         ms_mat <-  matrix(unlist(list_ms), nrow = mixing_iterations, ncol = num_sources+1, byrow = T)
       }
-      
-      #############CLS END#############
       
       
       #############EM###########
@@ -1599,15 +1391,6 @@ for (it in 1:itr){
           #create unknown for each sink i
           unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                               n_sources = n_sources) 
-          # new_source_2[[j+1]] = unknown_source
-          # totalnew_source_2[(j+1),] = unknown_source
-          # plot(as.numeric(unknown_source))
-          
-          # tmp_unk = change_C(newcov = COVERAGE, X = unknown_source)
-          # tmp_unk =  rarefy(x = unknown_source, maxdepth = COVERAGE)
-          # unknown_source = tmp_unk
-          # new_source_2[[j+1]] = t(round(unknown_source))
-          # source_2[[j+1]] = round(unknown_source)
           new_source_2[[j+1]] = round(unknown_source)
           totalnew_source_2[(j+1),] = round(unknown_source)
           
@@ -1615,35 +1398,21 @@ for (it in 1:itr){
           totalnew_source = totalnew_source_2
           
           new_source=lapply(new_source_2,t)
-          # totalnew_source <- t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
           totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
           new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
           new_source<-lapply(new_source, as.matrix)
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]))
-          
           envs_simulation <- c(1:(num_sources+1))
           
-          # View(data.frame(t(totalnew_source), sinks[i,]) )
         }
         
         samps <- list()
         samps <- new_source
         samps<-lapply(samps, t)
         
-        # num_sources = 5
         observed_samps <- samps
         observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
         
-        # observed_samps[[(num_sources + 1)]] = t(rpois(lambda = 2,n = dim(samps[[1]])[2]))
-        
-        # observed_samps<-lapply(observed_samps, t)
-        # str(observed_samps)
-        
-        # View(data.frame(t(totalsource),  sinks[1,]))
-        
-        
-        # num_sources = 5
+
         if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
         }else {initalphs<-runif(num_sources, 0.0, 1.0)}
         initalphs=initalphs/Reduce("+", initalphs)
@@ -1761,8 +1530,6 @@ for (it in 1:itr){
         ms_mat <-  matrix(unlist(list_ms), nrow = mixing_iterations, ncol = num_sources+1, byrow = T)
       }
       
-      #############CLS END#############
-      
       
       #############EM###########
       
@@ -1794,15 +1561,7 @@ for (it in 1:itr){
           #create unknown for each sink i
           unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                               n_sources = n_sources) 
-          # new_source_2[[j+1]] = unknown_source
-          # totalnew_source_2[(j+1),] = unknown_source
-          # plot(as.numeric(unknown_source))
-          
-          # tmp_unk = change_C(newcov = COVERAGE, X = unknown_source)
-          # tmp_unk =  rarefy(x = unknown_source, maxdepth = COVERAGE)
-          # unknown_source = tmp_unk
-          # new_source_2[[j+1]] = t(round(unknown_source))
-          # source_2[[j+1]] = round(unknown_source)
+
           new_source_2[[j+1]] = round(unknown_source)
           totalnew_source_2[(j+1),] = round(unknown_source)
           
@@ -1810,35 +1569,20 @@ for (it in 1:itr){
           totalnew_source = totalnew_source_2
           
           new_source=lapply(new_source_2,t)
-          # totalnew_source <- t(apply(totalnew_source, 1, function(x) change_C(COVERAGE, x)))  ##COVERAGE CHANGE
           totalnew_source <- rarefy(x = totalnew_source, maxdepth = COVERAGE)
           new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
           new_source<-lapply(new_source, as.matrix)
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]))
-          
           envs_simulation <- c(1:(num_sources+1))
-          
-          # View(data.frame(t(totalnew_source), sinks[i,]) )
+
         }
         
         samps <- list()
         samps <- new_source
         samps<-lapply(samps, t)
-        
-        # num_sources = 5
         observed_samps <- samps
         observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
         
-        # observed_samps[[(num_sources + 1)]] = t(rpois(lambda = 2,n = dim(samps[[1]])[2]))
-        
-        # observed_samps<-lapply(observed_samps, t)
-        # str(observed_samps)
-        
-        # View(data.frame(t(totalsource),  sinks[1,]))
-        
-        
-        # num_sources = 5
+
         if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
         }else {initalphs<-runif(num_sources, 0.0, 1.0)}
         initalphs=initalphs/Reduce("+", initalphs)
