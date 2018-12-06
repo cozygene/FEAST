@@ -20,7 +20,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   source("SourceTracker.R")
   source("src.R")
  
-  unk=T; noise=T; bs=F; clsinit=F; em_itr=1000; eps = T; include_epsilon = T
+  unk=T; noise=T; bs=F; clsinit=F; em_itr=100; eps = T; include_epsilon = T
 
   # Load sample metadata
   # metadata <- read.csv('metadata_example.txt',h=T, sep = "\t", row.names = 1)
