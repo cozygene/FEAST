@@ -6,7 +6,7 @@ FEAST is a scalable method for investigating the compositional patterns  of comp
 
 There are seven analyses in the FEAST paper :
 
-1. Simulation study (using realistic source distribution from the Earth Microbiome Project).//
+1. Simulation study (using realistic source distribution from the Earth Microbiome Project).
 2. Sequencing depth simulation (using realistic source distribution from the Earth Microbiome Project).
 3. Unknown source simulation (using realistic source distribution from Lax et al. 2014).
 4. Baby time series (real data analysis using data from Backhed et al. 2015).
