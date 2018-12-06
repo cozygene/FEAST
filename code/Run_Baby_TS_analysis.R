@@ -78,7 +78,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   emnoise_runtimes<-c()
   
   envs <- metadata$Env
-  num_sources = 3
+  num_sources <- 3
   
   sinks = otus[test.ix,]
   sink_samples = metadata[metadata$SourceSink=='Sink', 1]
