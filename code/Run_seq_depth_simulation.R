@@ -234,9 +234,9 @@ for (it in 1:itr){
     for(j in 1:num_sources){subtractsrc=subtractsrc + c(predict_cls)[j]*X[,j] }
     subtractsrc=as.matrix(subtractsrc)
     c = y - t(subtractsrc) #prediction error vector
-    # if(include_epsilon==T){
-    #   predict_cls<-c(predict_cls, 1-sum(predict_cls))
-    # }
+    if(include_epsilon==T){
+      predict_cls<-c(predict_cls, 1-sum(predict_cls))
+    }
     predict_cls=predict_cls/sum(predict_cls)
     c(list(predict_cls), list(c),list(cls_run_time)) #c(predcls[1], predcls[3], list(c))
   }
