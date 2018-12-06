@@ -2,7 +2,7 @@ rm(list = ls())
 gc()
 
 print("Change dir_path")
-dir_path = paste("~/Dropbox/Source Tracking/feast_code/")
+dir_path = paste("~/FEAST-master/")
 setwd(paste0(dir_path, "/src"))
 source("src.R")
 
@@ -34,6 +34,7 @@ EM_iterations = 100
 envs <- metadata$Env
 Ids <- unique(metadata$id)
 Proportions_est <- list()
+num_sources <- 3
 
 for(it in 1:length(Ids)){
   
@@ -59,7 +60,16 @@ for(it in 1:length(Ids)){
   FEAST<-EM_results(source=sources, sinks = t(sinks), env = envs[train.ix], em_itr = EM_iterations, COVERAGE = COVERAGE)
   Proportions_est[[it]] <- FEAST$data_prop[,1]
   
+  
   names(Proportions_est[[it]]) <- c(as.character(envs[train.ix]), "unknown")
+  
+  if(length(Proportions_est[[it]]) < num_sources +1){
+
+    tmp = Proportions_est[[it]]
+    Proportions_est[[it]][num_sources] = NA
+    Proportions_est[[it]][num_sources+1] = tmp[num_sources]
+  }
+  
   print("Source mixing proportions")
   print(Proportions_est[[it]])
   
@@ -68,4 +78,6 @@ for(it in 1:length(Ids)){
 }
 
 
+Proportions_est_data = matrix(unlist(Proportions_est), ncol = (num_sources+1), byrow = T)
+colnames(Proportions_est_data) = c(as.character(envs[train.ix]), "unknown")
 
