@@ -66,7 +66,6 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
     }
     
     if(BODYPART==T){
-      #p1idx<-grep('person1_', metadata$Env)
       people<-as.character(metadata[grep('person', metadata$Env), "Env"])
       people<-unique(unlist(lapply(strsplit(people, split='_'), function(l) l[[1]])))
       for(pers in people){
@@ -113,9 +112,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
     sources<-st$sources[-which(rownames(st$sources) == 'Unknown'),]
     
     envs <- row.names(sources)
-    # dir.create(paste0(my_path,"FEAST_Results_",dataset,"/"))
     
-    # setwd(paste0(my_path,"FEAST_Results_",dataset,"/"))
     js_values<-c()
     x <- sources[c(1:dim(sources)[1]),]
     JSDMatrix <- jsdmatrix(x)
@@ -131,19 +128,14 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
     
     
     for(i in first_sink:last_sink){
-      #row.names(sinks)
-      #for(i in 1:1){
       print(paste("time",i))
-      #sources <- original_sources
       
-      #sinks <- original_sinks
       print(row.names(sinks)[i])
       
       if(grepl("norarefy",dataset) == FALSE){
         sink<-rarefy(t(sinks[i,]), apply(sources, 1, sum)[1])
       }
 
-      #results <- predict(st,sink)
       ####  Initialize the unknown source using raw sources and sink
       unk_source<-unknown__initialize_1(sources, sink, n_sources=dim(sources)[1])
       if(grepl("norarefy",dataset) == FALSE){
@@ -174,12 +166,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
       names(tmp$toret)<-labels
       pred_emnoise = tmp$toret
       
-    #   setwd("/results/Home_Microbiome_house1")
-    #   saveRDS(tmp$toret, file = paste0('em_baseline_unkinit', paste0(strsplit(as.character(rownames(sinks)[i]),
-                                                                            #   split='[.]')[[1]][2:5], sep='', collapse=''), COVERAGE, savestr))
-    #   write.table(t(as.matrix(tmp$toret)),file = paste0('em_baseline_unkinit', paste0(strsplit(as.character(rownames(sinks)[i]),
-    #                                                                                           split='[.]')[[1]][2:5],sep='', collapse=''),COVERAGE, savestr,".txt"),
-    #               sep="\t",quote=FALSE)
+
       
       
 
