@@ -79,7 +79,6 @@ source_data_new = source_data[ind,]
 
 for (it in 1:itr){
   envs_simulation <- 1:num_sources
-  #####adding support for multiple sources#####
   totalsource<-source_data_new[sample(1:dim(source_data_new)[1],num_sources,F),]
   totalsource<-as.matrix(totalsource)
   apply(totalsource, 1, sum)
@@ -91,7 +90,6 @@ for (it in 1:itr){
   dists<-lapply(sources, function(x) x/(sum(colSums(x))))
   totaldist<-t(Reduce("cbind", dists))
   
-  # print(str(totalsource))
   
   epsource<-rpois(n = length(totalsource[1,]), lambda = 10) #use a different source for the unknown 
   epdist<-epsource/(sum(epsource))
@@ -125,7 +123,6 @@ for (it in 1:itr){
     totalnew_source[j,] = as.numeric(t(rmultinom(n = 1, size = sum(totalsource[j,]), prob=totaldist[j,])))}
   new_source=lapply(new_source,t)
   totalnew_source=t(apply(totalnew_source, 1, function(x) change_C(COVERAGE[it], x)))  ##COVERAGE[it] CHANGE
-  # apply(totalnew_source, 1, sum)
   new_source<- split(totalnew_source, seq(nrow(totalnew_source)))
   new_source<-lapply(new_source, as.matrix)
   
@@ -204,45 +201,31 @@ for (it in 1:itr){
       #create unknown for each sink i
       unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                           n_sources = n_sources) 
-      # new_source_2[[j+1]] = unknown_source
-      # totalnew_source_2[(j+1),] = unknown_source
-      # plot(as.numeric(unknown_source))
+
       
       tmp_unk = rarefy(maxdepth = COVERAGE[it], x = as.matrix(unknown_source))
-      # tmp_unk = change_C(newcov = COVERAGE[it], X = unknown_source)
       unknown_source = tmp_unk
       new_source_2[[j+1]] = t(round(unknown_source))
-      # source_2[[j+1]] = round(unknown_source)
       totalnew_source_2[(j+1),] = round(unknown_source)
       
       
       totalnew_source = totalnew_source_2
       
       new_source=lapply(new_source_2,t)
-      # totalsource=t(apply(totalsource, 1, function(x) change_C(COVERAGE[it], x)))  ##COVERAGE[it] CHANGE
       new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
       new_source<-lapply(new_source, as.matrix)
-      
-      
       envs_simulation <- c(1:(num_sources+1))
-      
-      # View(data.frame(t(totalnew_source), sinks[i,]) )
+
     }
     
-    # i= 1
     X <- source_process_nounknown(totalnew_source, envs_simulation, rarefaction_depth = COVERAGE[it])
     X <- t(t(X)/rowSums(t(X)))
     y<-t(as.matrix(sinks[i,]))
-    #relative abundance
     y <- y/rowSums(y)
     X_mat = as.matrix(X)
     y_mat = as.matrix(y)
     cls_start_time<-as.numeric(proc.time()[3])
     test = lsei(a = X_mat, b = t(y_mat), e =  diag(length(envs_simulation)), f = rep(0, length(envs_simulation)))
-    #test = test/sum(test)
-    
-    # test = lsei(a = X_mat, b = as.numeric(y_mat), e =  diag(length(envs_simulation)), 
-    #             f = rep(0, length(envs_simulation)), c = t(rep(1, length(envs_simulation))),d = 1)
     test[test < 0] = 0
     
     cls_run_time<- as.numeric(proc.time()[3]) - cls_start_time
@@ -282,12 +265,7 @@ for (it in 1:itr){
   cls_sources_R2s<-append(cls_sources_R2s, list(as.matrix(t(cls_R2s))))
   cls_R2_averages <- append(cls_R2_averages, mean(na.omit(cls_R2s)))
   cls_runtimes<-c(cls_runtimes, mean(cls_rts))
-  
-#   print(paste("cls_R2_averages = ", round(cls_R2_averages, 4)))
-  
-  
-  #############CLS END#############
-  
+
   
   #############EM###########
   
@@ -319,44 +297,28 @@ for (it in 1:itr){
       #create unknown for each sink i
       unknown_source = unknown_initialize(sources = totalnew_source_old[c(1:n_sources),], sink = as.numeric(sinks[i,]), 
                                           n_sources = n_sources) 
-      # new_source_2[[j+1]] = unknown_source
-      # totalnew_source_2[(j+1),] = unknown_source
-      # plot(as.numeric(unknown_source))
       
       tmp_unk = rarefy(maxdepth = COVERAGE[it], x = as.matrix(unknown_source))
       unknown_source = tmp_unk
       new_source_2[[j+1]] = t(round(unknown_source))
-      # source_2[[j+1]] = round(unknown_source)
       totalnew_source_2[(j+1),] = round(unknown_source)
       
       
       totalnew_source = totalnew_source_2
       
       new_source<- lapply(new_source_2,t)
-      # totalnew_source <- t(apply(totalsource, 1, function(x) change_C(COVERAGE[it], x)))  ##COVERAGE[it] CHANGE
       new_source<- split(totalnew_source_2, seq(nrow(totalnew_source_2)))
       new_source<-lapply(new_source, as.matrix)
-      
-      
       envs_simulation <- c(1:(num_sources+1))
-      
-      # View(data.frame(t(totalnew_source), sinks[i,]) )
+
     }
     
     samps <- list()
     samps <- new_source
     samps<-lapply(samps, t)
-    
-    # num_sources = 5
     observed_samps <- samps
     observed_samps[[(num_sources + 1)]] = t(rep(0,  dim(samps[[1]])[2]))
-    # observed_samps<-lapply(observed_samps, t)
-    # str(observed_samps)
-    
-    # View(data.frame(t(totalsource),  sinks[1,]))
-    
-    
-    # num_sources = 5
+
     if(eps==T) {initalphs<-runif(num_sources+1, 0.0, 1.0)
     }else {initalphs<-runif(num_sources, 0.0, 1.0)}
     initalphs=initalphs/Reduce("+", initalphs)
@@ -534,6 +496,6 @@ if(st_flag_seq_depth == 0){
 ggsave(filename="../results/Seq_depth_plot.png", plot = comp_plot , dpi = 600, width = 8.75, height = 6.1, units = "in")
   
   
-#   stopCluster(cl)
+stopCluster(cl)
 
   
