@@ -22,8 +22,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
  
   unk=T; noise=T; bs=F; clsinit=F; em_itr=100; eps = T; include_epsilon = T
 
-  # Load sample metadata
-  # metadata <- read.csv('metadata_example.txt',h=T, sep = "\t", row.names = 1)
+  # Load sample delivery mode metadata 
   Delivery_mode <- read.csv("../data/Backhed_metadata.csv")
   Delivery_mode <- Delivery_mode[,c(1,2,6)]
   
@@ -36,26 +35,15 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   
   Delivery_mode_id = as.character(Delivery_mode_id)
   
-  
-  # setwd("/Users/liatshenhav/Dropbox/Source Tracking/sourcetracker_0.9.8_server/")
-  
+    
   # load sample metadata
   metadata <- read.table('../data/metadata_baby_ts.txt',sep='\t',h=T,check=F,comment='', row.names = 1)
   head(metadata)
   
   # load OTU table
-  # This 'read.table' command is designed for a 
-  # QIIME-formatted OTU table.
-  # namely, the first line begins with a '#' sign
-  # and actually _is_ a comment; the second line
-  # begins with a '#' sign but is actually the header
-  
-  # otus <- read.table('data/otus.txt',sep='\t', header=T,row.names=1,check=F,skip=1,comment='')
-  # otus <- read.table('data/otus_2.txt',sep='\t', header=T,row.names=1,check=F,skip=1,comment='')
   otus <- read.table('../data/otu_baby_ts.txt',sep='\t', header = T)
   otus <- t(as.matrix(otus))
   
-  otus[1:10, 1:10]
   
   # extract only those samples in common between the two tables
   common.sample.ids <- intersect(rownames(metadata), rownames(otus))
@@ -72,18 +60,10 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   # extract the source environments and source/sink indices
   train.ix <- which(metadata$SourceSink=='Source')
   test.ix <- which(metadata$SourceSink=='Sink')
-  
-  
-  
   if(is.element('Description',colnames(metadata))) desc <- metadata$Description
   
   
   alpha1 <- alpha2 <- 0.001
-  
-  # train SourceTracker object on training data
-  # st <- sourcetracker(otus[train.ix,], envs[train.ix], rarefaction_depth = 10000)
-  # str(st$source)
-  
   cls_results_1 = c();
   cls_results_2 = c();
   st_results = c();
@@ -101,18 +81,14 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   num_sources = 3
   
   sinks = otus[test.ix,]
-  
   sink_samples = metadata[metadata$SourceSink=='Sink', 1]
-
   k = which(metadata$SourceSink == 'Sink' )
+  id_uniq = unique(metadata$id)
   itr = length(k)
-  it = 1
+  
+
   CI = list()
   js_values = c()
-  
-  
-  id_uniq = unique(metadata$id)
-  
   emnoise_results = c()
   em_results = c()
   js_values = c()
@@ -122,7 +98,6 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
   
   for (it in 1:length(id_uniq)){
     
-    
     metadata[k[it] ,1]
     
     sinks = otus[which(rownames(otus) == as.character(rownames(metadata)[which(metadata$Env == sink_samples[it])])),]
@@ -130,22 +105,14 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
     test.ix <- which(metadata$SourceSink=='Sink' & metadata$id == id_uniq[it])
     
     COVERAGE = min(apply(otus[c(train.ix,test.ix),], 1, sum))
-    # COVERAGE=10000
     
     st <- sourcetracker(otus[train.ix,], envs[train.ix], rarefaction_depth = COVERAGE)
-    
-    
-    
+   
     print(paste("Number of OTUs in the sink sample = ",length(which(sinks > 0))))
     print(paste("Seq depth in the sink sample = ",sum(sinks)))
     print(paste("The sink is:", envs[test.ix]))
-
-    ##EM
     
     source = st$sources[-dim(st$sources)[1],]
-    # source = st$sources
-    # envs_simulation <- 1:num_sources
-    #####adding support for multiple sources#####
     totalsource<-source
     totalsource<-as.matrix(totalsource)
     sources <- split(totalsource, seq(nrow(totalsource)))
@@ -164,10 +131,10 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
     source_old<- split(totalsource_old, seq(nrow(totalsource_old)))
     source_old<-lapply(source_old, as.matrix)
     
-    #Creating the unknown source per mixing iteration
+    #Creating the unknown source initial per mixing iteration
     if(include_epsilon == TRUE){
       
-      ##Adding the initial value of the unknown source for CLS and EM
+      ##Adding the initial value of the unknown source for FEAST
       source_2 = list()
       totalsource_2 = matrix(NA, ncol = dim(totalsource_old)[2], nrow = ( dim(totalsource_old)[1] + 1))
       
@@ -178,26 +145,21 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
       }
       
       #create unknown for each sink i
-      
       sinks_rarefy = rarefy(matrix(sinks, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1]) #make
       
       unknown_source_1 = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
                                             n_sources = num_sources)
       
       unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 1)
-      # unknown_source = rpois(n = length(sinks_rarefy), lambda = 1)
       
-      # unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1])
       unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
       source_2[[j+1]] = t(unknown_source_rarefy)
       totalsource_2[(j+1),] = t(unknown_source_rarefy)
       totalsource = totalsource_2
       
       source=lapply(source_2,t)
-      # totalsource <- rarefy(x = totalsource, maxdepth = COVERAGE)  
       source<- split(totalsource, seq(nrow(totalsource_2)))
       source<-lapply(source_2, as.matrix)
-      
       envs_simulation <- c(1:(num_sources+1))
       
     }
@@ -205,11 +167,9 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
     
     samps <- source
     samps<-lapply(samps, t)
-    
     observed_samps <- samps
     observed_samps[[(num_sources + 1)]] = t(rep(0, dim(samps[[1]])[2]))
-    # observed_samps<-lapply(observed_samps, t)
-    # str(observed_samps)
+
     
     #Calculate JSD value
     x <- totalsource[c(1:num_sources),]
