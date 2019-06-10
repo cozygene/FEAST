@@ -45,7 +45,7 @@ FEAST will be available on Qiime II in July 2019. Until then you can easily run 
 
 | ARGUMENT | DEFAULT |DESCRIPTION |
 | ------------- | ------------- |------------- |
-| path  |   |The path in which you saved the directory FEAST_src (e.g., "~/Dropbox/FEAST_src") |
+| path  |   |The path in which you saved the repository 'FEAST' (e.g., "~/Dropbox/Microbial_source_Tracking") |
 | metadata_file  |   |The full name of you metadata file, including file type (e.g., "my_metadata.txt) |
 | count_matrix   |   |The full name of your taxa count matrix, including file type (e.g., "my_count_matrix.txt)  |
 | num_sources  |   |Number of source environments in your data set  |
@@ -62,7 +62,7 @@ To run FEAST on example data (using multiple sinks) do:
 	
 	1. Clone this repository ('FEAST') and save it on your computer.
 	2. Run the file 'FEAST_example' which takes the following arguments as input:
-	path = the path in which you saved the directory 'FEAST' (string)
+	path = The path in which you saved the repository 'FEAST' (e.g., "~/Dropbox/Microbial_source_Tracking") 
 	
 
 Input - 
