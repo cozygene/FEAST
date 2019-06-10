@@ -50,8 +50,8 @@ num_sources <- number of sources (int)
 | ARGUMENT | DEFAULT |DESCRIPTION |
 | ------------- | ------------- |------------- |
 | path  |   |The path in which you saved the directory FEAST_src (e.g., "~/Dropbox/FEAST_src") |
-| metadata_file  |   |The full name of you metadata file, including file type (e.g., "metadata_example.txt) |
-| count_matrix   |   |The full name of your taxa count matrix, including file type (e.g., "count_matrix_example.txt)  |
+| metadata_file  |   |The full name of you metadata file, including file type (e.g., "my_metadata.txt) |
+| count_matrix   |   |The full name of your taxa count matrix, including file type (e.g., "my_count_matrix.txt)  |
 | num_sources  |   |Number of source environments in your data set  |
 | num_sources  | 1000  |Number of EM iterations. We recommend using this default value.   |
 
