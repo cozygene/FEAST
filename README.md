@@ -75,10 +75,10 @@ metadata:
 
 | SampleID | ENV |SourceSink | id|
 | ------------- | ------------- |------------- |------------- |
-| ERR525698  |  Baby_1_gut_birth | Source | 1|
-| ERR525693  |  Baby_1_gut_4_months | Source | 1|
-| ERR525688   |  Baby_1_gut_12_months | Sink| 1|
-| ERR525699  |  Baby_1_gut_mother | Source | 1|
+| ERR525698  |  Baby_1_birth | Source | 1|
+| ERR525693  |  Baby_1_4_months | Source | 1|
+| ERR525688   |  Baby_1_12_months | Sink| 1|
+| ERR525699  |  Baby_1_mother | Source | 1|
 
 
 count matrix:
