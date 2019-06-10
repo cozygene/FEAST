@@ -6,7 +6,7 @@ dir_path = paste("~/FEAST")
 setwd(paste0(dir_path, "FEAST_src"))
 source("src.R")
 
-#set the arguments of you data
+#Example data arguments 
 metadata_file = "metadata_example.txt" #metadata file name
 count_matrix = "otu_example.txt" #count_matrix file name
 num_sources <- 7 #number of sources
