@@ -14,7 +14,7 @@ Software Requirements and dependencies
 
 FEAST is written R. In addition to R 3.4.4 (and higher), it has the following dependencies::
 
-"doParallel", "foreach", "mgcv", "reshape2", "ggplot2", "philentropy", "MCMCpack", "lsei", "Rcpp", "RcppArmadillo" and "cowplot".
+"doParallel", "foreach", "vegan", "mgcv", "reshape2", "ggplot2", "philentropy", "MCMCpack", "lsei", "Rcpp", "RcppArmadillo" and "cowplot".
 
 Input format
 -----------------------
