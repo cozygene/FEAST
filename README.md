@@ -42,11 +42,6 @@ FEAST will be available on Qiime II in July 2019. Until then you can easily run 
 	2. Save your input data (metadata and count table) in the directory 'Data_files'.
 	3. Run the file 'FEAST_main' from 'FEAST_src' after inserting the following arguments as input:
 
-path = the path in which you saved the directory 'FEAST_src' (string)
-metadata_file =  your_metadata_file_name (string)
-count_matrix =  your taxa count matrix (string)
-num_sources <- number of sources (int)
-
 
 | ARGUMENT | DEFAULT |DESCRIPTION |
 | ------------- | ------------- |------------- |
