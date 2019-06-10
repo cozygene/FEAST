@@ -67,7 +67,7 @@ To run FEAST on example data (using multiple sinks) do:
 
 Input - 
 
-metadata:
+metadata (first 4 rows):
 
 | SampleID | ENV |SourceSink | 
 | ------------- | ------------- |------------- |
@@ -77,7 +77,7 @@ metadata:
 | ERR525699  |  Adult gut 2 | Source | 
 
 
-count matrix:
+count matrix (first 4 rows and columns):
 
 | | ERR525698 |ERR525693 | ERR525688| ERR525699|
 | ------------- | ------------- |------------- |------------- |------------- |
