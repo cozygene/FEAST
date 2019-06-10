@@ -22,7 +22,7 @@ The input to FEAST is composed of two tab-separated ASCII text files :
 
 count table  - A matrix of samples by taxa with the sources and sink. The first row contains the sample headers (SampleID). The first column contains taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected (see example below).
 
-Metadata -  The first row contains the headers (SampleID, Env, SourceSink, id). The first column contains sample ids. The second column is a description of the sampled environment (e.g., human gut), the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink') and the forth column is the id for each combination of sources and sink (allows you to examine multiple combinations of sources and sinks with only one file). Note that these names must be respected  (see example below).
+metadata -  The first row contains the headers (SampleID, Env, SourceSink, id). The first column contains sample ids. The second column is a description of the sampled environment (e.g., human gut), the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink') and the forth column is the id for each combination of sources and sink (allows you to examine multiple combinations of sources and sinks with only one file). Note that these names must be respected  (see example below).
 
 
 
@@ -70,17 +70,24 @@ To run FEAST on example data (using multiple sinks) do:
 
 Input - 
 
-Metadata:
+metadata:
 
-| SampleID | ENV |SourceSink | id
-| ------------- | ------------- |------------- |
-| ERR525698  |  Baby_1_gut_birth | Source | 1
-| ERR525693  |  Baby_1_gut_4_months | Source | 1
-| ERR525688   |  Baby_1_gut_12_months | Sink| 1
-| ERR525699  |  Baby_1_gut_mother | Source | 1
+| SampleID | ENV |SourceSink | id|
+| ------------- | ------------- |------------- |------------- |
+| ERR525698  |  Baby_1_gut_birth | Source | 1|
+| ERR525693  |  Baby_1_gut_4_months | Source | 1|
+| ERR525688   |  Baby_1_gut_12_months | Sink| 1|
+| ERR525699  |  Baby_1_gut_mother | Source | 1|
 
 
-Count matrix:
+count matrix:
+
+| | ERR525698 |ERR525693 | ERR525688| ERR525699|
+| ------------- | ------------- |------------- |------------- |------------- |
+| taxa_1  |  0 | 5 | 0|20 |
+| taxa_2  |  15 | 5 | 0|0 |
+| taxa_3  |  0 | 13 | 200|0 |
+| taxa_4  |  4 | 5 | 0|0 |
 
  
 
