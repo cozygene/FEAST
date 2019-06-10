@@ -76,7 +76,7 @@ metadata:
 | SampleID | ENV |SourceSink | 
 | ------------- | ------------- |------------- |
 | ERR525698  |  infant gut 1 | Sink |
-| ERR525693  |  infant skin 1 | Source | 
+| ERR525693  |  infant gut 2 | Source | 
 | ERR525688   |  Adult gut 1 | Source| 
 | ERR525699  |  Adult gut 2 | Source | 
 
@@ -94,7 +94,7 @@ count matrix:
 
 Output - 
 
-| infant skin 1  |Adult gut 1 | Adult gut 2| Adult gut 3| Adult skin 1 |  Adult skin 2|  Adult skin 3| Soil 1 | Soil 2 | unknown|
+| infant gut 2  |Adult gut 1 | Adult gut 2| Adult gut 3| Adult skin 1 |  Adult skin 2|  Adult skin 3| Soil 1 | Soil 2 | unknown|
 | ------------- | ------------- |------------- |------------- |------------- |------------- |------------- |------------- |------------- |------------- |
 |  5.108461e-01  |  9.584116e-23 | 4.980321e-12 | 2.623358e-02|5.043635e-13 | 8.213667e-59| 1.773058e-10 |  2.704118e-14 |  3.460067e-02 |  4.283196e-01 |
 
