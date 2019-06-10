@@ -1,7 +1,7 @@
 FEAST
 -----------------------
 
-FEAST is a scalable algorithm for investigating the compositional patterns  of complex microbial communities. 
+FEAST is a scalable algorithm for quantifying the origins of complex microbial communities. 
 
 Support
 -----------------------
