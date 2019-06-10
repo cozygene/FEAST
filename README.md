@@ -18,7 +18,7 @@ FEAST is written R. In addition to R 3.4.4 (and higher), it has the following de
 
 Input format
 -----------------------
-The input to FEAST are two tab-separated ASCII text files :
+The input to FEAST is composed of two tab-separated ASCII text files :
 
 count table  - A matrix of samples by taxa with the sources and sink. The first row contains the sample headers (SampleID). The first column contains taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected (see example below).
 
