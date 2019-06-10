@@ -471,7 +471,7 @@ unknown__initialize_1 <- function(sources, sink, n_sources){
 }
 
 
-EM_results<- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T, COVERAGE,
+FEAST <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T, COVERAGE,
                       unknown_initialize = 0){
   
 
