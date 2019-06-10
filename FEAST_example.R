@@ -57,8 +57,8 @@ for(it in 1:length(Ids)){
   
   # Estimate source proportions for each sink
   
-  FEAST<-FEAST(source=sources, sinks = t(sinks), env = envs[train.ix], em_itr = EM_iterations, COVERAGE = COVERAGE)
-  Proportions_est[[it]] <- FEAST$data_prop[,1]
+  FEAST_output<-FEAST(source=sources, sinks = t(sinks), env = envs[train.ix], em_itr = EM_iterations, COVERAGE = COVERAGE)
+  Proportions_est[[it]] <- FEAST_output$data_prop[,1]
   
   
   names(Proportions_est[[it]]) <- c(as.character(envs[train.ix]), "unknown")
