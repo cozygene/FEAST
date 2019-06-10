@@ -73,12 +73,12 @@ Input -
 
 metadata:
 
-| SampleID | ENV |SourceSink | id|
-| ------------- | ------------- |------------- |------------- |
-| ERR525698  |  Baby_1_birth | Source | 1|
-| ERR525693  |  Baby_1_4_months | Source | 1|
-| ERR525688   |  Baby_1_12_months | Sink| 1|
-| ERR525699  |  Baby_1_mother | Source | 1|
+| SampleID | ENV |SourceSink | 
+| ------------- | ------------- |------------- |
+| ERR525698  |  infant gut 1 | Sink |
+| ERR525693  |  infant skin 1 | Source | 
+| ERR525688   |  Adult gut 1 | Source| 
+| ERR525699  |  Adult gut 2 | Source | 
 
 
 count matrix:
