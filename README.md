@@ -69,7 +69,7 @@ Input -
 
 metadata (first 4 rows):
 
-| SampleID | ENV |SourceSink | 
+| SampleID | Env |SourceSink | 
 | ------------- | ------------- |------------- |
 | ERR525698  |  infant gut 1 | Sink |
 | ERR525693  |  infant gut 2 | Source | 
