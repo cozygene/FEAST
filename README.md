@@ -57,7 +57,7 @@ FEAST will be available on Qiime II in July 2019. Until then you can easily run 
 Example
 ---------------------------
 
-To run FEAST on example data (using multiple sinks) do:
+To run FEAST on example data (using one sink) do:
 
 	
 	1. Clone this repository ('FEAST') and save it on your computer.
