@@ -2,8 +2,8 @@ rm(list = ls())
 gc()
 
 print("Change directory path")
-dir_path = paste("~/FEAST")
-setwd(paste0(dir_path, "/FEAST_src"))
+dir_path = paste("~/FEAST/")
+setwd(paste0(dir_path, "FEAST_src"))
 source("src.R")
 
 #Set the arguments of your data
