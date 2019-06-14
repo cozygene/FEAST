@@ -3,7 +3,7 @@ gc()
 
 print("Change directory path")
 dir_path = paste("~/FEAST_src/")
-setwd(paste0(dir_path, "code"))
+setwd(dir_path)
 source("src.R")
 
 #Set the arguments of your data
