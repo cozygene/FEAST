@@ -22,9 +22,12 @@ Input format
 -----------------------
 The input to FEAST is composed of two tab-separated ASCII text files :
 
-count table  - A matrix of samples by taxa with the sources and sink. The first row contains the sample headers (SampleID). The first column contains taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected (see example below).
+count table  - A matrix of samples by taxa with the sources and sink. The first row contains the sample ids ('SampleID'). The first column contains taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected (see example below).
 
-metadata -  The first row contains the headers (SampleID, Env, SourceSink). The first column contains sample ids. The second column is a description of the sampled environment (e.g., human gut), and the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). Note that these names must be respected  (see example below).
+metadata -  The first row contains the headers ('SampleID', 'Env', 'SourceSink', 'id'). The first column contains the sample ids. The second column is a description of the sampled environment (e.g., human gut), the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The forth column is the Sink-Source id. 
+When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' =  Sink will get an id (between 1 -  number of sinks in the data). In this scenatio, the sources ids are blank. 
+When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 -  number of sinks in the data). 
+Note that these names must be respected  (see examples below).
 
 
 
@@ -67,14 +70,29 @@ To run FEAST on example data (using multiple sinks) do:
 
 Input - 
 
-metadata (first 4 rows):
+metadata
+
+*using multiple sinks each tested with the same group of sources :
 
 | SampleID | Env |SourceSink | id |
-| ------------- | ------------- |------------- |
+| ------------- | ------------- |------------- |-------------|
 | ERR525698  |  infant gut 1 | Sink | 1
 | ERR525693  |  infant gut 2 | Sink | 2 |
 | ERR525688   |  Adult gut 1 | Source| NA |
 | ERR525699  |  Adult gut 2 | Source | NA |
+| ERR525697  |  Adult gut 3 | Source | NA |
+
+
+*using multiple sinks each tested with a different group of sources :
+
+| SampleID | Env |SourceSink | id |
+| ------------- | ------------- |------------- |-------------|
+| ERR525698  |  infant gut 1 | Sink | 1
+| ERR525688   |  Adult gut 1 | Source| 1 |
+| ERR525691  |  Adult gut 2 | Source | 1 |
+| ERR525699  |  infant gut 2 | Sink | 2 |
+| ERR525697  |  Adult gut 3 | Source | 2 |
+| ERR525696  |  Adult gut 4 | Source | 2 |
 
 
 count matrix (first 4 rows and columns):
