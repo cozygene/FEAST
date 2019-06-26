@@ -48,8 +48,8 @@ FEAST will be available on Qiime II in July 2019. Until then you can easily run 
 | path  |   |The path in which you saved the repository 'FEAST' (e.g., "~/Dropbox/Microbial_source_Tracking") |
 | metadata_file  |   |The full name of you metadata file, including file type (e.g., "my_metadata.txt) |
 | count_matrix   |   |The full name of your taxa count matrix, including file type (e.g., "my_count_matrix.txt)  |
-| num_sources  |   |Number of source environments in your data set  |
-| num_sources  | 1000  |Number of EM iterations. We recommend using this default value.   |
+| different_sources_flag  |   |Relevant only when using multiple sinks. If you use different sources for each sink, different_sources_flag = 1, otherwise = 0 |
+| EM_iterations  | 1000  |Number of EM iterations. We recommend using this default value.   |
 
 
 
