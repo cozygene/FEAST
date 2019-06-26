@@ -57,11 +57,11 @@ FEAST will be available on Qiime II in July 2019. Until then you can easily run 
 Example
 ---------------------------
 
-To run FEAST on example data (using one sink) do:
+To run FEAST on example data (using multiple sinks) do:
 
 	
 	1. Clone this repository ('FEAST') and save it on your computer.
-	2. Run the file 'FEAST_example' which takes the following arguments as input:
+	2. Run the file 'FEAST_example_Multiple_sinks' which takes the following arguments as input:
 	path = The path in which you saved the repository 'FEAST' (e.g., "~/Dropbox/Microbial_source_Tracking") 
 	
 
@@ -69,12 +69,12 @@ Input -
 
 metadata (first 4 rows):
 
-| SampleID | Env |SourceSink | 
+| SampleID | Env |SourceSink | id |
 | ------------- | ------------- |------------- |
-| ERR525698  |  infant gut 1 | Sink |
-| ERR525693  |  infant gut 2 | Source | 
-| ERR525688   |  Adult gut 1 | Source| 
-| ERR525699  |  Adult gut 2 | Source | 
+| ERR525698  |  infant gut 1 | Sink | 1
+| ERR525693  |  infant gut 2 | Sink | 2 |
+| ERR525688   |  Adult gut 1 | Source| NA |
+| ERR525699  |  Adult gut 2 | Source | NA |
 
 
 count matrix (first 4 rows and columns):
@@ -96,6 +96,6 @@ Output -
 
 
 
-This is an exmaple illustrating the use of FEAST with one sink. To use FEAST with multiple sinks in parallel, please see 'FEAST_example_Multiple_sinks.R'
+This is an exmaple illustrating the use of FEAST with multiple sinks. To use FEAST with only one sink, please see 'FEAST_example.R'
 
 © 2018 Big Data and Genomics Lab at UCLA All Rights Reserved
