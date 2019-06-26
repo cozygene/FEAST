@@ -72,7 +72,7 @@ Input -
 
 metadata
 
-*using multiple sinks each tested with the same group of sources :
+*using multiple sinks, each tested with the same group of sources:
 
 | SampleID | Env |SourceSink | id |
 | ------------- | ------------- |------------- |-------------|
@@ -83,7 +83,7 @@ metadata
 | ERR525697  |  Adult gut 3 | Source | NA |
 
 
-*using multiple sinks each tested with a different group of sources :
+*using multiple sinks, each tested with a different group of sources:
 
 | SampleID | Env |SourceSink | id |
 | ------------- | ------------- |------------- |-------------|
