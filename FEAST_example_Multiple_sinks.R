@@ -9,8 +9,9 @@ source("src.R")
 #Set the arguments of your data
 metadata_file = "metadata_example_multi.txt"
 count_matrix = "otu_example_multi.txt"
-num_sources <- 3 
 EM_iterations = 1000 #default value
+##if you use different sources for each sink, different_sources_flag = 1, otherwise = 0
+different_sources_flag = 1
 
 setwd(paste0(dir_path, "Data_files"))
 # Load sample metadata
@@ -34,19 +35,36 @@ if(length(common.sample.ids) <= 1) {
 }
 
 
+if(different_sources_flag == 0){
+  
+  metadata$id[metadata$SourceSink == 'Source'] = NA
+  metadata$id[metadata$SourceSink == 'Sink'] = c(1:length(which(metadata$SourceSink == 'Sink')))
+}
 
 
 envs <- metadata$Env
-Ids <- unique(metadata$id)
+Ids <- na.omit(unique(metadata$id))
 Proportions_est <- list()
+
 
 for(it in 1:length(Ids)){
   
   
   # Extract the source environments and source/sink indices
+  if(different_sources_flag == 1){
+    
+    train.ix <- which(metadata$SourceSink=='Source' & metadata$id == Ids[it])
+    test.ix <- which(metadata$SourceSink=='Sink' & metadata$id == Ids[it])
+
+  }
   
-  train.ix <- which(metadata$SourceSink=='Source' & metadata$id == Ids[it])
-  test.ix <- which(metadata$SourceSink=='Sink' & metadata$id == Ids[it])
+  else{
+    
+    train.ix <- which(metadata$SourceSink=='Source')
+    test.ix <- which(metadata$SourceSink=='Sink' & metadata$id == Ids[it])
+  }
+  
+  num_sources <- length(train.ix)
   COVERAGE =  min(rowSums(otus[c(train.ix, test.ix),]))  #Can be adjusted by the user
   
   # Define sources and sinks
@@ -77,10 +95,7 @@ for(it in 1:length(Ids)){
   print("Source mixing proportions")
   print(Proportions_est[[it]])
   
-  
-  
+
 }
 
-
-Proportions_est_data = matrix(unlist(Proportions_est), ncol = (num_sources+1), byrow = T)
-colnames(Proportions_est_data) = c("Env_2", "Env_3", "Env_4", "unknown")
+print(Proportions_est)
