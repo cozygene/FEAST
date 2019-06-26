@@ -2,14 +2,13 @@ rm(list = ls())
 gc()
 
 print("Change directory path")
-dir_path = paste("~/FEAST")
+dir_path = paste("~/Dropbox/FEAST-master/")
 setwd(paste0(dir_path, "FEAST_src"))
 source("src.R")
 
 #Example data arguments 
 metadata_file = "metadata_example.txt" #metadata file name
 count_matrix = "otu_example.txt" #count_matrix file name
-num_sources <- 7 #number of sources
 EM_iterations = 1000 # number of EM iterations. default value
 
 setwd(paste0(dir_path, "Data_files"))
@@ -43,6 +42,7 @@ envs <- metadata$Env
 
 train.ix <- which(metadata$SourceSink=='Source')
 test.ix <- which(metadata$SourceSink=='Sink')
+num_sources <- length(train.ix) #number of sources
 COVERAGE =  min(rowSums(otus[c(train.ix, test.ix),]))  #Can be adjusted by the user
 
 # Define sources and sinks
