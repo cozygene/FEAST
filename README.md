@@ -24,7 +24,7 @@ The input to FEAST is composed of two tab-separated ASCII text files :
 
 count table  - A matrix of samples by taxa with the sources and sink. The first row contains the sample ids ('SampleID'). The first column contains taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected (see example below).
 
-metadata -  The first row contains the headers ('SampleID', 'Env', 'SourceSink', 'id'). The first column contains the sample ids. The second column is a description of the sampled environment (e.g., human gut), the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The forth column is the Sink-Source id. 
+metadata -  The first row contains the headers ('SampleID', 'Env', 'SourceSink', 'id'). The first column contains the sample ids. The second column is a description of the sampled environment (e.g., human gut), the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. 
 When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' =  Sink will get an id (between 1 -  number of sinks in the data). In this scenatio, the sources ids are blank. 
 When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 -  number of sinks in the data). 
 Note that these names must be respected  (see examples below).
