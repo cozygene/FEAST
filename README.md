@@ -114,6 +114,6 @@ Output -
 
 
 
-This is an exmaple illustrating the use of FEAST with multiple sinks. To use FEAST with only one sink, please see 'FEAST_example.R'
+This is an example illustrating the use of FEAST with multiple sinks. To use FEAST with only one sink, please see 'FEAST_example.R'
 
 © 2018 Big Data and Genomics Lab at UCLA All Rights Reserved
