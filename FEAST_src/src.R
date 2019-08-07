@@ -14,7 +14,7 @@ cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
             {return(a % b); }", depends="RcppArmadillo")
 
 
-"change_C"<-function(newcov, X){
+change_C<-function(newcov, X){
   
   X=t(as.matrix(X))
   idx = 1:dim(X)[2]
@@ -70,7 +70,7 @@ rarefy <- function(x,maxdepth){
   return(x)
 }
 
-"jsdmatrix" <- function(x){
+jsdmatrix <- function(x){
   d <- matrix(0,nrow=nrow(x),ncol=nrow(x))
   for(i in 1:(nrow(x)-1)){
     for(j in (i+1):nrow(x)){
@@ -81,38 +81,42 @@ rarefy <- function(x,maxdepth){
   return(d)
 }
 
-"jsd" <- function(p,q){
+jsd <- function(p,q){
   m <- (p + q)/2
   return((kld(p,m) + kld(q,m))/2)
 }
 
+kld <- function(p,q){
+  nonzero <- p>0 & q>0
+  return(sum(p[nonzero] * log2(p[nonzero]/q[nonzero])))    
+}
 
-"h"<-function(x) {y <- x[x > 0]; -sum(y * log(y))}; 
-"mult_JSD" <- function(p,q) {h(q %*% p) - q %*% apply(p, 1, h)}
+h<-function(x) {y <- x[x > 0]; -sum(y * log(y))}; 
+mult_JSD <- function(p,q) {h(q %*% p) - q %*% apply(p, 1, h)}
 
-"retrands"<-function(V){
+retrands<-function(V){
   toret<-unlist(lapply(c(V), function(x) runif(1, x+1e-12, x+1e-09)))
   return(toret)
 }
 
-"getR2"<-function(x,y){
+getR2<-function(x,y){
   return((cor(x,y))^2)
 }
 
-"E"<-function(alphas, sources){
+E<-function(alphas, sources){
   nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
   denom<-(Reduce("+", nums))
   return(nums/denom)
 }
 
-"A"<-function(alph, XO, raos){
+A<-function(alph, XO, raos){
   tmp<-crossprod(alph, XO/raos)
   tmp<-rapply(list(tmp), f=function(x) ifelse(is.nan(x),0,x), how="replace" )
   tmp<-Reduce("+",unlist(tmp))
   return(tmp)
 }
 
-"M"<-function(alphas, sources, sink, observed){
+M<-function(alphas, sources, sink, observed){
   
   newalphs<-c()
   rel_sink <-sink/sum(sink)
@@ -166,7 +170,7 @@ rarefy <- function(x,maxdepth){
   return(Results)
 }
 
-"do_EM"<-function(alphas, sources, observed, sink, iterations){
+do_EM<-function(alphas, sources, observed, sink, iterations){
   
   curalphas<-alphas
   newalphas<-alphas
@@ -188,7 +192,7 @@ rarefy <- function(x,maxdepth){
   return(results)
 }
 
-"M_basic"<-function(alphas, sources, sink){
+M_basic <-function(alphas, sources, sink){
   newalphs<-c()
   XOs<-lapply(sources,schur, b=sink)
   AOs<-t(mapply(crossprod, x=sources, y=alphas))
@@ -206,7 +210,7 @@ rarefy <- function(x,maxdepth){
   return(newAs/(tot))
 }
 
-"do_EM_basic"<-function(alphas, sources, sink, iterations){
+do_EM_basic<-function(alphas, sources, sink, iterations){
   curalphas<-alphas
   newalphas<-alphas
   m_guesses<-c(alphas[1])
@@ -221,7 +225,7 @@ rarefy <- function(x,maxdepth){
   return(toret)
 }
 
-"source_process_nounknown" <- function(train, envs, rarefaction_depth=1000){
+source_process_nounknown <- function(train, envs, rarefaction_depth=1000){
   
   train <- as.matrix(train)
   
@@ -245,7 +249,7 @@ rarefy <- function(x,maxdepth){
   return(X)
 }
 
-"read_pseudo_data"<-function(dataset){
+read_pseudo_data <-function(dataset){
   path_to_data<-"../data/"
   if(dataset=="DA"){
     df<-read.table(paste0(path_to_data,"DA_99_T_d10000_date_nan.txt"), fill = NA)
@@ -323,7 +327,6 @@ create_m <- function(num_sources, n, EPSILON){
   
 }
 
-
 unknown_initialize <- function(sources, sink, n_sources){
   
   unknown_source = rep(0, length(sink))
@@ -342,7 +345,6 @@ unknown_initialize <- function(sources, sink, n_sources){
   return(unknown_source)
   
 }
-
 
 unknown_initialize_1 <- function(sources, sink, n_sources){
   
@@ -472,7 +474,7 @@ unknown__initialize_1 <- function(sources, sink, n_sources){
 
 
 FEAST <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T, COVERAGE,
-                      unknown_initialize = 0){
+                  unknown_initialize_flag = 0){
   
 
   tmp = source
@@ -521,16 +523,16 @@ FEAST <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = row
     
     sinks_rarefy = rarefy(matrix(sinks, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1]) #make
     
-    if(unknown_initialize == 1)
-      unknown_source_1 = unknown_initialize_1(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
+    if(unknown_initialize_flag == 1)
+      unknown_source = unknown_initialize_1(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
                                           n_sources = num_sources)
     
     
-    if(unknown_initialize == 0)
-      unknown_source_1 = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
+    if(unknown_initialize_flag == 0)
+      unknown_source = unknown_initialize(sources = totalsource[c(1:num_sources),], sink = as.numeric(sinks),
                                           n_sources = num_sources)
 
-    unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 0.5)
+    # unknown_source = unknown_source_1 + rpois(n = length(sinks), lambda = 0.5)
 
     unknown_source_rarefy = rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
     source_2[[j+1]] = t(unknown_source_rarefy)
@@ -606,5 +608,4 @@ FEAST <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = row
   return(Results)
   
 }
-
 
