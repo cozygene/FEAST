@@ -39,7 +39,7 @@ The output is a vector of  contributions of the known and unknown sources (with 
 Usage instructions
 ---------------------------
 
-FEAST will be available on Qiime II in July 2019. Until then you can easily run it on your computer in just a few easy steps which I will walk you through in the following lines. 
+FEAST will be available on Qiime II (hopefully) soon enough. Until then you can easily run it on your computer in just a few easy steps which I will walk you through in the following lines. 
 
 	1. Clone this repository ('FEAST') and save it on your computer.
 	2. Save your input data (metadata and count table) in the directory 'Data_files'.
