@@ -1,7 +1,7 @@
 FEAST - a scalable algorithm for quantifying the origins of complex microbial communities
 -----------------------
 
-A major challenge of analyzing the compositional structure of microbiome data is identifying its potential origins. Here, we introduce Fast Expectation-mAximization microbial Source Tracking (FEAST), a ready-to-use scalable framework that can simultaneously estimate the contribution of thousands of potential source environments in a timely manner, thereby helping unravel the origins of complex microbial communities. The information gained from FEAST may provide insight into quantifying contamination, tracking the formation of developing microbial communities, as well as distinguishing and characterizing bacteria-related health conditions. 
+A major challenge of analyzing the compositional structure of microbiome data is identifying its potential origins. Here, we introduce Fast Expectation-mAximization microbial Source Tracking (*FEAST*), a ready-to-use scalable framework that can simultaneously estimate the contribution of thousands of potential source environments in a timely manner, thereby helping unravel the origins of complex microbial communities. The information gained from *FEAST* may provide insight into quantifying contamination, tracking the formation of developing microbial communities, as well as distinguishing and characterizing bacteria-related health conditions. 
 For more details see Shenhav et al. 2019, Nature Methods (https://www.nature.com/articles/s41592-019-0431-x).
 
 Support
@@ -13,64 +13,78 @@ For support using FEAST, please email: liashenhav@gmail.com
 Software Requirements and dependencies
 -----------------------
 
-FEAST is written R. In addition to R 3.4.4 (and higher), it has the following dependencies::
+*FEAST* is implemented in R (>= 3.4.4) and requires the following dependencies: **Rcpp**, **RcppArmadillo**, **vegan**, **dplyr**, **reshape2**, **gridExtra**, **ggplot2**, **ggthemes**. Please install them prior to trying to install *FEAST*. If you are using a mac and having installation issues with **Rcpp** and or **RcppArmadillo**, try installing homebrew or xcode then reinstalling **Rcpp** and **RcppArmadillo**. 
 
-"doParallel", "foreach",  "dplyr", "vegan", "mgcv", "reshape2", "ggplot2", "philentropy", "MCMCpack", "lsei", "Rcpp", "RcppArmadillo" and "cowplot".
 
+Installation
+---------------------------
+
+*FEAST* will be available on Qiime II very soon. Until then you can you can simply install *FEAST* using **devtools**: 
+
+```
+devtools::install_github("cozygene/FEAST", ref = "FEAST_beta")
+```
+
+## Usage
+As input, *FEAST* takes mandatory arguments:
+- _C_ - An _m_ by _n_ count matrix, where _m_ is the number samples and _n_ is the number of taxa.
+- _metadata_ - An _m_ by 3 table, where _m_ is the number samples. The metadata table has three colunms (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenatio, the sources ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
+- _EM_iterations_ - A numeric value indicating the number of EM iterations (default 1000).
+- _COVERAGE_ - A numeric value indicating the rarefaction depth (default = minimal sequencing depth within each group of sink and its corresponding sources).
+- _different_sources_flag_ - A boolian value indicating the source-sink assignment. different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
+
+
+*FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicateds that source j was not used in the analysis of sink i.
+
+
+
+Demo
+-----------------------
+We provide a dataset for an example of FEAST's usage. Download the demo files <a href="https://github.com/cozygene/FEAST/FEAST_beta/Data_files">here</a>.
+
+First load the **FEAST** packages into R:
+```
+library(FEAST)
+```
+
+Then, load the datasets:
+```
+metadata <- Load_metadata(metadata_path = "~/FEAST/Data_files/metadata_example_multi.txt")
+otus <- Load_CountMatrix(CountMatrix_path = "~/FEAST/Data_files/otu_example_multi.txt")
+```
+Run _FEAST_, saving the output with prefix "demo":
+
+```
+FEAST_output <- FEAST(C = otus, metadata = metadata, different_sources_flag = 1, outfile="demo")
+```
+
+_FEAST_ will then save the file
+*demo_FEAST.txt* - A file containing an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1.
+
+
+Input - 
 
 Input format
 -----------------------
-The input to FEAST is composed of two tab-separated ASCII text files :
+The input to *FEAST* is composed of two tab-separated ASCII text files :
 
 count table  - A matrix of samples by taxa with the sources and sink. The first row contains the sample ids ('SampleID'). The first column contains taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected (see example below).
+
+count matrix (first 4 rows and columns):
+
+| | ERR525698 |ERR525693 | ERR525688| ERR525699|
+| ------------- | ------------- |------------- |------------- |------------- |
+| taxa_1  |  0 | 5 | 0|20 |
+| taxa_2  |  15 | 5 | 0|0 |
+| taxa_3  |  0 | 13 | 200|0 |
+| taxa_4  |  4 | 5 | 0|0 |
+
 
 metadata -  The first row contains the headers ('SampleID', 'Env', 'SourceSink', 'id'). The first column contains the sample ids. The second column is a description of the sampled environment (e.g., human gut), the third column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. 
 When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' =  Sink will get an id (between 1 -  number of sinks in the data). In this scenatio, the sources ids are blank. 
 When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 -  number of sinks in the data). 
 Note that these names must be respected  (see examples below).
 
-
-
-Output format
------------------------
-
-The output is a vector of  contributions of the known and unknown sources (with the pre-defined source environments as headers). 
-
-Usage instructions
----------------------------
-
-FEAST will be available on Qiime II (hopefully) soon enough. Until then you can easily run it on your computer in just a few easy steps which I will walk you through in the following lines. 
-
-	1. Clone this repository ('FEAST') and save it on your computer.
-	2. Save your input data (metadata and count table) in the directory 'Data_files'.
-	3. Run the file 'FEAST_main' from 'FEAST_src' after inserting the following arguments as input:
-
-
-| ARGUMENT | DEFAULT |DESCRIPTION |
-| ------------- | ------------- |------------- |
-| path  |   |The path in which you saved the repository 'FEAST' (e.g., "~/Dropbox/Microbial_source_Tracking") |
-| metadata_file  |   |The full name of you metadata file, including file type (e.g., "my_metadata.txt) |
-| count_matrix   |   |The full name of your taxa count matrix, including file type (e.g., "my_count_matrix.txt)  |
-| different_sources_flag  |   |Relevant only when using multiple sinks. If you use different sources for each sink, different_sources_flag = 1, otherwise = 0 |
-| EM_iterations  | 1000  |Number of EM iterations. We recommend using this default value.   |
-
-
-
-
-Example
----------------------------
-
-To run FEAST on example data (using multiple sinks) do:
-
-	
-	1. Clone this repository ('FEAST') and save it on your computer.
-	2. Run the file 'FEAST_example_Multiple_sinks' which takes the following arguments as input:
-	path = The path in which you saved the repository 'FEAST' (e.g., "~/Dropbox/Microbial_source_Tracking") 
-	
-
-Input - 
-
-metadata
 
 *using multiple sinks, each tested with the same group of sources:
 
@@ -95,15 +109,6 @@ metadata
 | ERR525696  |  Adult gut 4 | Source | 2 |
 
 
-count matrix (first 4 rows and columns):
-
-| | ERR525698 |ERR525693 | ERR525688| ERR525699|
-| ------------- | ------------- |------------- |------------- |------------- |
-| taxa_1  |  0 | 5 | 0|20 |
-| taxa_2  |  15 | 5 | 0|0 |
-| taxa_3  |  0 | 13 | 200|0 |
-| taxa_4  |  4 | 5 | 0|0 |
-
  
 
 Output - 
@@ -114,5 +119,4 @@ Output -
 
 
 
-This is an example illustrating the use of FEAST with multiple sinks. To use FEAST with only one sink, please see 'FEAST_example.R'
 
