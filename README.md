@@ -13,7 +13,15 @@ For support using FEAST, please email: liashenhav@gmail.com
 Software Requirements and dependencies
 -----------------------
 
-*FEAST* is implemented in R (>= 3.4.4) and requires the following dependencies: **Rcpp**, **RcppArmadillo**, **vegan**, **dplyr**, **reshape2**, **gridExtra**, **ggplot2**, **ggthemes**. Please install them prior to trying to install *FEAST*. If you are using a mac and having installation issues with **Rcpp** and or **RcppArmadillo**, try installing homebrew or xcode then reinstalling **Rcpp** and **RcppArmadillo**. 
+*FEAST* is implemented in R (>= 3.4.4) and requires the following dependencies: **Rcpp**, **RcppArmadillo**, **vegan**, **dplyr**, **reshape2**, **gridExtra**, **ggplot2**, **ggthemes**. Please install and load them prior to trying to install *FEAST*. If you are using a mac and having installation issues with **Rcpp** and or **RcppArmadillo**, try installing homebrew or xcode then reinstalling **Rcpp** and **RcppArmadillo**. 
+
+
+```
+Packages <- c("Rcpp", "RcppArmadillo", "vegan", "dplyr", "reshape2", "gridExtra", "ggplot2", "ggthemes")
+install.packages(Packages)
+lapply(Packages, library, character.only = TRUE)
+
+```
 
 
 Installation
