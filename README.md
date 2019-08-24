@@ -71,8 +71,29 @@ FEAST_output <- FEAST(C = otus, metadata = metadata, different_sources_flag = 1,
 _FEAST_ will then save the file
 *demo_FEAST.txt* - A file containing an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1.
 
+Graphical representation: 
 
-Input - 
+As input, *PlotSourceContribution* takes mandatory arguments:
+
+- _SinkNames_ - A vector with the sink names to plot.
+- _SourceNames_ - A vector with all the sources' names.
+- _Same_sources_flag_ - A boolian value indicating the source-sink plotting assignment. Same_sources_flag = 1 if the same sources are assigned to the pre-defined sink samples , otherwise = 0.
+- _dir_path_ - A path to an output .png file.
+- _mixing_proportions_ - A list of vectors, where entry i corresponds to the vector of source contributions (summing to 1) to sink i.
+- _Plot_title_ - 
+- _N_ - Number of barplot in each output .png file.
+
+```
+PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(1:8)],
+                       SourceNames = colnames(FEAST_output), 
+                       Same_sources_flag = 0, 
+                       dir_path = "~/Dropbox/FEAST_MS/FEAST_beta/",
+                       mixing_proportions = FEAST_output, 
+                       Plot_title = "Test_", 
+                       N = 4)
+```
+
+
 
 Input format
 -----------------------
