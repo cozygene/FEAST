@@ -40,7 +40,7 @@ As input, *FEAST* takes mandatory arguments:
 
 Demo
 -----------------------
-We provide a dataset for an example of FEAST's usage. Download the demo files <a href="https://github.com/cozygene/FEAST/FEAST_beta/Data_files">here</a>.
+We provide a dataset for an example of FEAST's usage. Download the demo files <a href="https://github.com/cozygene/FEAST/tree/FEAST_beta/Data_files">here</a>.
 
 First load the **FEAST** packages into R:
 ```
