@@ -27,12 +27,14 @@ devtools::install_github("cozygene/FEAST", ref = "FEAST_beta")
 
 ## Usage
 As input, *FEAST* takes mandatory arguments:
+
 - _C_ - An _m_ by _n_ count matrix, where _m_ is the number samples and _n_ is the number of taxa.
 - _metadata_ - An _m_ by 3 table, where _m_ is the number samples. The metadata table has three colunms (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenatio, the sources ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
 - _EM_iterations_ - A numeric value indicating the number of EM iterations (default 1000).
 - _COVERAGE_ - A numeric value indicating the rarefaction depth (default = minimal sequencing depth within each group of sink and its corresponding sources).
 - _different_sources_flag_ - A boolian value indicating the source-sink assignment. different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
 
+Value: 
 
 *FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicateds that source j was not used in the analysis of sink i.
 
