@@ -19,6 +19,8 @@
 #' @param COVERAGE A numeric value indicating the rarefaction depth (default = minimal sequencing depth within each group of sink
 #' and its corresponding sources).
 #' @param different_sources_flag A boolian value indicating the source-sink assignment.
+#' @param dir_path A path to an output .txt file.
+#' @param outfile the prefix for saving the output file.
 #' different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
 #' @return P - an \eqn{S1} by \eqn{S2} matrix, where \eqn{S1} is the number sinks and \eqn{S2}
 #' is the number of sources (including an unknown source). Each row in matrix \eqn{P} sums to 1.
@@ -39,7 +41,8 @@
 #' }
 #'
 #' @export
-FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag = 1){
+FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag,
+                  dir_path, outfile){
 
   ###1. Parse metadata and check it has the correct hearer (i.e., Env, SourceSink,	id)
   if(sum(colnames(metadata)=='Env')==0) stop("The metadata file must contain an 'Env' column naming the source environment for each sample.")
@@ -140,6 +143,8 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
   rownames(proportions_mat) <- envs_sink
   # proportions_mat[is.na(proportions_mat)] <- 999
 
+  setwd(dir_path)
+  write.table(proportions_mat, file = paste0(outfile,"_source_contributions_matrix.txt"), sep = "\t")
   return(proportions_mat)
 
 }
