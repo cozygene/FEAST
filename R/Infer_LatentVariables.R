@@ -1,16 +1,13 @@
 
-# Rcpp::cppFunction("arma::mat schur(arma::mat& a, arma::mat& b)
-#                   {return(a % b); }", depends="RcppArmadillo")
 
-
-# Calculate Kullback–Leibler divergence
+#E - step
 E <- function(alphas, sources){
   nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
   denom<-(Reduce("+", nums))
   return(nums/denom)
 }
 
-# Calculate Kullback–Leibler divergence
+#M-step
 M <- function(alphas, sources, sink, observed){
 
   newalphs<-c()
@@ -64,7 +61,7 @@ M <- function(alphas, sources, sink, observed){
   return(Results)
 }
 
-# Calculate Kullback–Leibler divergence
+
 M_basic <- function(alphas, sources, sink){
 
   newalphs<-c()
@@ -84,7 +81,7 @@ M_basic <- function(alphas, sources, sink){
   return(newAs/(tot))
 }
 
-# Calculate Kullback–Leibler divergence
+
 do_EM <-function(alphas, sources, observed, sink, iterations){
 
   curalphas<-alphas
@@ -107,7 +104,7 @@ do_EM <-function(alphas, sources, observed, sink, iterations){
   return(results)
 }
 
-# Calculate Kullback–Leibler divergence
+
 
 do_EM_basic <- function(alphas, sources, sink, iterations){
   curalphas<-alphas
@@ -124,7 +121,7 @@ do_EM_basic <- function(alphas, sources, sink, iterations){
   return(toret)
 }
 
-# Calculate Kullback–Leibler divergence
+# unknown source initialization
 unknown_initialize_1 <- function(sources, sink, n_sources){
 
 
@@ -142,7 +139,7 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
 
     }
 
-    #Select the cor OTUs
+    #Select the cor taxa
     ind_cor <- list()
     ind_known_source_abun <- c()
     ind_cor_all <- which(sources[1,] > 0)
@@ -172,7 +169,6 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
     if(length(ind_cor_all) > 1){
 
       cor_abundance <- round(apply(sources[,ind_cor_all], 2, min)/2) #take the min abundnace of the 'cor'
-      # unknown_source[ind_cor_all] <- cor_abundance
       unknown_source[ind_cor_all] <- 0
 
 
@@ -186,16 +182,13 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
 
   for(j in 1:length(ind_no_known_source_abun)){
 
-    # unknown_source[ind_no_known_source_abun[j]] <- max(runif(n = 1, min = 1, max = 100), sink[ind_no_known_source_abun[j]])
     unknown_source[ind_no_known_source_abun[j]] <- max((sink[ind_no_known_source_abun[j]] - rpois(n = 1, lambda = 0.5)), 0)
 
   }
 
   unknown_source[is.na(unknown_source)] <- 0
 
-  # if(n_sources == 1)
-  #   # unknown_source = rep(0, length(sink))
-  #   unknown_source = rpois(n = length(sinks), lambda = 0.01)
+
 
 
 
@@ -203,7 +196,8 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
 
 }
 
-# Calculate Kullback–Leibler divergence
+# unknown source initialization
+
 unknown_initialize <- function(sources, sink, n_sources){
 
   unknown_source <- rep(0, length(sink))
@@ -224,7 +218,7 @@ unknown_initialize <- function(sources, sink, n_sources){
 
 }
 
-# Calculate Kullback–Leibler divergence
+
 Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T,
                   COVERAGE, unknown_initialize_flag = 1){
 
@@ -371,7 +365,7 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
 }
 
-# Calculate Kullback–Leibler divergence
+
 SharedTaxa_function <- function(count_data = otus,
                                 Taxonomy = taxonomy,
                                 all_sources = train.ix,
