@@ -65,7 +65,8 @@ otus <- Load_CountMatrix(CountMatrix_path = "~/FEAST/Data_files/otu_example_mult
 Run _FEAST_, saving the output with prefix "demo":
 
 ```
-FEAST_output <- FEAST(C = otus, metadata = metadata, different_sources_flag = 1, outfile="demo")
+FEAST_output <- FEAST(C = otus, metadata = metadata, different_sources_flag = 1, dir_path = "~/FEAST/Data_files/",
+                      outfile="demo")
 ```
 
 _FEAST_ will then save the file
@@ -84,13 +85,9 @@ As input, *PlotSourceContribution* takes mandatory arguments:
 - _N_ - Number of barplot in each output .png file.
 
 ```
-PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(1:8)],
-                       SourceNames = colnames(FEAST_output), 
-                       Same_sources_flag = 0, 
-                       dir_path = "~/Dropbox/FEAST_MS/FEAST_beta/",
-                       mixing_proportions = FEAST_output, 
-                       Plot_title = "Test_", 
-                       N = 4)
+PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(5:8)],
+                       SourceNames = colnames(FEAST_output), dir_path = "~/FEAST/Data_files/",
+                       mixing_proportions = FEAST_output, Plot_title = "Test_",Same_sources_flag = 0, N = 4)
 ```
 
 
