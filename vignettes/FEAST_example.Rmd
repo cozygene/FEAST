@@ -23,7 +23,7 @@ FEAST is a ready-to-use scalable framework that can simultaneously estimate the 
 
 ```{r install_dependencies, echo=T, results='hide', message=F, warning=F}
 Packages <- c("Rcpp", "RcppArmadillo", "vegan", "dplyr", "reshape2", "gridExtra", "ggplot2", "ggthemes")
-# install.packages(Packages)
+install.packages(Packages)
 lapply(Packages, library, character.only = TRUE)
 ```
 
