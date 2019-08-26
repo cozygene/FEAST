@@ -41,10 +41,12 @@ As input, *FEAST* takes mandatory arguments:
 - _EM_iterations_ - A numeric value indicating the number of EM iterations (default 1000).
 - _COVERAGE_ - A numeric value indicating the rarefaction depth (default = minimal sequencing depth within each group of sink and its corresponding sources).
 - _different_sources_flag_ - A boolian value indicating the source-sink assignment. different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
+- _dir_path_ - A path to an output .txt file.
+- _outfile_ - the prefix for saving the output file.
 
 Value: 
 
-*FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicateds that source j was not used in the analysis of sink i.
+*FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicateds that source j was not used in the analysis of sink i. *FEAST* will save the file "demo_FEAST.txt" (a file containing matrix P) .
 
 
 
