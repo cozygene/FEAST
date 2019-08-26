@@ -95,7 +95,7 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
 
   for(it in 1:num_sinks){
     
-    if(it%%10==0)
+    if(it%%10==0 || it == num_sinks)
       print(paste0("Calculating mixinig proportions for sink ", it))
 
     ###6. Assign ids to sinks and their corresponding sources - for every sink (test.id) match its sources (train.ix)
