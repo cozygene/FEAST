@@ -97,7 +97,7 @@ contributions (summing to 1) to sink i.
 - _N_  - Number of barplot in each output .png file.
 
 ```{r plot_example, warning=FALSE}
-K = 2
+K = 2 #number of sinks to plot
 PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(1:K)],
                        SourceNames = colnames(FEAST_output), dir_path = "~/FEAST/Data_files/",
                        mixing_proportions = FEAST_output, Plot_title = "Test_",Same_sources_flag = 0, N = 2)
