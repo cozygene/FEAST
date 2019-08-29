@@ -84,7 +84,7 @@ As input, *PlotSourceContribution* takes mandatory arguments:
 - _Same_sources_flag_ - A Boolean value indicating the source-sink plotting assignment. Same_sources_flag = 1 if the same sources are assigned to the pre-defined sink samples , otherwise = 0.
 - _dir_path_ - A path to an output .png file.
 - _mixing_proportions_ - A list of vectors, where entry i corresponds to the vector of source contributions (summing to 1) to sink i.
-- _Plot_title_ - 
+- _Plot_title_ -  Plot's title and output .png file's name.
 - _N_ - Number of barplots in each output .png file.
 
 
