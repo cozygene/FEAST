@@ -2,7 +2,8 @@ FEAST - a scalable algorithm for quantifying the origins of complex microbial co
 -----------------------
 
 A major challenge of analyzing the compositional structure of microbiome data is identifying its potential origins. Here, we introduce Fast Expectation-mAximization microbial Source Tracking (*FEAST*), a ready-to-use scalable framework that can simultaneously estimate the contribution of thousands of potential source environments in a timely manner, thereby helping unravel the origins of complex microbial communities. The information gained from *FEAST* may provide insight into quantifying contamination, tracking the formation of developing microbial communities, as well as distinguishing and characterizing bacteria-related health conditions. 
-For more details see Shenhav et al. 2019, Nature Methods (https://www.nature.com/articles/s41592-019-0431-x).
+For more details see Shenhav et al., Nature Methods 2019 (https://www.nature.com/articles/s41592-019-0431-x).
+
 
 Support
 -----------------------
@@ -27,8 +28,7 @@ lapply(Packages, library, character.only = TRUE)
 Installation
 ---------------------------
 
-*FEAST* will be available on Qiime II very soon. Until then you can you can simply install *FEAST* using **devtools**: 
-
+*FEAST* will be available on QIIME 2 very soon. Until then you can you can simply install *FEAST* using **devtools**: 
 ```
 devtools::install_github("cozygene/FEAST", ref = "FEAST_beta")
 ```
@@ -37,22 +37,23 @@ devtools::install_github("cozygene/FEAST", ref = "FEAST_beta")
 As input, *FEAST* takes mandatory arguments:
 
 - _C_ - An _m_ by _n_ count matrix, where _m_ is the number samples and _n_ is the number of taxa.
-- _metadata_ - An _m_ by 3 table, where _m_ is the number samples. The metadata table has three colunms (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenatio, the sources ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
+- _metadata_ - An _m_ by 3 table, where _m_ is the number of samples. The metadata table has three columns (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The third column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenario, the sources’ ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
 - _EM_iterations_ - A numeric value indicating the number of EM iterations (default 1000).
 - _COVERAGE_ - A numeric value indicating the rarefaction depth (default = minimal sequencing depth within each group of sink and its corresponding sources).
-- _different_sources_flag_ - A boolian value indicating the source-sink assignment. different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
-- _dir_path_ - A path to an output .txt file.
+- _different_sources_flag_ - A Boolean value indicating the source-sink assignment. different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
+- _dir_path_ - A path to an output.txt file.
 - _outfile_ - the prefix for saving the output file.
 
 Value: 
 
-*FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicateds that source j was not used in the analysis of sink i. *FEAST* will save the file "demo_FEAST.txt" (a file containing matrix P) .
+*FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicates that source j was not used in the analysis of sink i. *FEAST* will save the file "demo_FEAST.txt" (a file containing matrix P) .
+
 
 
 
 Demo
 -----------------------
-We provide a dataset for an example of FEAST's usage. Download the demo files <a href="https://github.com/cozygene/FEAST/tree/FEAST_beta/Data_files">here</a>.
+We provide a dataset for an example of FEAST usage. Download the demo files <a href="https://github.com/cozygene/FEAST/tree/FEAST_beta/Data_files">here</a>.
 
 First load the **FEAST** packages into R:
 ```
@@ -80,11 +81,12 @@ As input, *PlotSourceContribution* takes mandatory arguments:
 
 - _SinkNames_ - A vector with the sink names to plot.
 - _SourceNames_ - A vector with all the sources' names.
-- _Same_sources_flag_ - A boolian value indicating the source-sink plotting assignment. Same_sources_flag = 1 if the same sources are assigned to the pre-defined sink samples , otherwise = 0.
+- _Same_sources_flag_ - A Boolean value indicating the source-sink plotting assignment. Same_sources_flag = 1 if the same sources are assigned to the pre-defined sink samples , otherwise = 0.
 - _dir_path_ - A path to an output .png file.
 - _mixing_proportions_ - A list of vectors, where entry i corresponds to the vector of source contributions (summing to 1) to sink i.
 - _Plot_title_ - 
-- _N_ - Number of barplot in each output .png file.
+- _N_ - Number of barplots in each output .png file.
+
 
 ```
 PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(5:8)],
@@ -96,9 +98,10 @@ PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(5:8)],
 
 Input format
 -----------------------
-The input to *FEAST* is composed of two tab-separated ASCII text files :
+The input to *FEAST* is composed of two tab-delimited ASCII text files:
 
-(1) count table - An m by n count matrix, where m is the number samples and n is the number of taxa. Row names are the sample ids ('SampleID'). Column names are the taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected.
+(1) count table - An m by n count matrix, where m is the number samples and n is the number of taxa. Row names are the sample ids ('SampleID'). Column names are the taxa ids. Every consecutive column contains read counts for each sample. Note that this order must be respected.
+
 
 count matrix (first 4 rows and columns):
 
@@ -111,7 +114,7 @@ count matrix (first 4 rows and columns):
 
 
 
-(2) metadata - An m by 3 table, where m is the number samples. The metadata table has three colunms (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenatio, the sources ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
+(2) metadata - An m by 3 table, where m is the number of samples. The metadata table has three columns (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The third column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenario, the sources’ ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
 
 
 *using multiple sinks, each tested with the same group of sources:
