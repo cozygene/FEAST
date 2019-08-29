@@ -7,7 +7,7 @@ For more details see Shenhav et al. 2019, Nature Methods (https://www.nature.com
 Support
 -----------------------
 
-For support using FEAST, please email: liashenhav@gmail.com. Our new beta version is now available (FEAST_beta branch).
+For support using FEAST, please email: liashenhav@gmail.com. Our new beta version is now available (FEAST_beta branch). Your comments/insights would be greatly appreciated.
 
 
 Software Requirements and dependencies
