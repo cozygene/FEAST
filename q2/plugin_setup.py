@@ -1,12 +1,21 @@
 
-from qiime2.plugin import (Properties, Int, Metadata, Str, Bool)
+import qiime2.sdk
+import qiime2.plugin
+from qiime2.plugin import (Properties, Int,
+                           Metadata, Str, Bool)
+from q2_types.feature_table import (FeatureTable,
+                                    Frequency, 
+                                    RelativeFrequency)
+
 from ._method import sourcetrack
 from ._feast_defaults import (DESC_META, DESC_ENVC,
                               DESC_SSC, DESC_SOURCEID,
                               DESC_SINKID, DESC_SHARED,
                               DESC_EMITR, DESC_DIFFS,
-                              DESC_MP)
+                              DESC_MP, DESC_TBL)
 
+# TODO: will need to fix the version number
+__version__ = '0.1.0'
 
 # perams types
 PARAMETERS = {'metadata': Metadata,
@@ -41,7 +50,7 @@ plugin = qiime2.plugin.Plugin(
     package='FEAST')
 
 plugin.methods.register_function(
-    function=ctf,
+    function=sourcetrack,
     inputs={'table': FeatureTable[Frequency]},
     parameters=PARAMETERS,
     outputs=[('mixing_proportions', FeatureTable[RelativeFrequency])],
