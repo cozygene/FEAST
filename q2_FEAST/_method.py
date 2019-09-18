@@ -81,12 +81,16 @@ def sourcetrack(table: pd.DataFrame,
         rename_cols = ['Env', 'SourceSink']
     # keep only those columns
     metadata = metadata.to_dataframe()
+    metadata.index = metadata.index.astype(str)
     feast_meta = metadata.dropna(subset=keep_cols)
     feast_meta = feast_meta.loc[:, keep_cols]
+
     # filter the metadata & table so they are matched
+    table = table.T
     shared_index = list(set(table.columns) & set(feast_meta.index))
     feast_meta = feast_meta.reindex(shared_index)
     table = table.loc[:, shared_index]
+
     # format the sub-classes for source-sink
     feast_meta = feast_format(feast_meta,
                                 source_sink_column,
