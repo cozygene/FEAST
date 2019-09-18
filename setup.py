@@ -20,11 +20,11 @@ setup(
     license='cc-by-sa-4.0',
     url="https://www.bioconductor.org/packages/devel/bioc/html/ALDEx2.html",
     entry_points={
-        'qiime2.plugins': ['q2-FEAST=q2.plugin_setup:plugin']
+        'qiime2.plugins': ['q2-FEAST=q2_FEAST.plugin_setup:plugin']
     },
-    scripts=['q2/assets/source_tracking.R'],
+    scripts=['q2_FEAST/assets/source_tracking.R'],
     package_data={
-        "q2": ['assets/index.html', 'citations.bib'],
+        "q2_FEAST": ['citations.bib'],
     },
     zip_safe=False,
 )
