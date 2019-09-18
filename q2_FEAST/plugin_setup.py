@@ -1,10 +1,10 @@
 
 import qiime2.sdk
 import qiime2.plugin
-from qiime2.plugin import (Properties, Int,
-                           Metadata, Str, Bool)
+from qiime2.plugin import (Int, Metadata,
+                           Str, Bool)
 from q2_types.feature_table import (FeatureTable,
-                                    Frequency, 
+                                    Frequency,
                                     RelativeFrequency)
 
 from ._method import sourcetrack
@@ -59,13 +59,18 @@ plugin.methods.register_function(
     output_descriptions={'mixing_proportions': DESC_MP},
     name='microbial source-tracking',
     description=('A major challenge of analyzing the compositional '
-                'structure of microbiome data is identifying its potential origins. '
-                'Here, we introduce fast expectation-maximization microbial source '
-                'tracking (FEAST), a ready-to-use scalable framework that can '
-                'simultaneously estimate the contribution of thousands of potential '
-                'source environments in a timely manner, thereby helping unravel the '
-                'origins of complex microbial communities. The information gained from '
-                'FEAST may provide insight into quantifying contamination, tracking the '
-                'formation of developing microbial communities, as well as distinguishing '
-                'and characterizing bacteria-related health conditions.'),
+                 'structure of microbiome data is identifying its '
+                 'potential origins. Here, we introduce fast '
+                 'expectation-maximization microbial source '
+                 'tracking (FEAST), a ready-to-use scalable '
+                 'framework that can simultaneously estimate '
+                 'the contribution of thousands of potential '
+                 'source environments in a timely manner, '
+                 'thereby helping unravel the '
+                 'origins of complex microbial communities. '
+                 'The information gained from '
+                 'FEAST may provide insight into quantifying'
+                 ' contamination, tracking the formation of developing'
+                 ' microbial communities, as well as distinguishing '
+                 'and characterizing bacteria-related health conditions.'),
 )

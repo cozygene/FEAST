@@ -1,15 +1,12 @@
 import os
-import qiime2
-import pandas as pd
 import tempfile
 import subprocess
+import pandas as pd
 from ._feast_defaults import (DEFAULT_DIFFS,
-                              DEFAULT_EMITR,
-                              DEFAULT_SHARED)
+                              DEFAULT_EMITR)
 
 
 def run_commands(cmds, verbose=True):
-
     """
     This function is a script runner.
     It was obtained from https://github.com/ggloor
@@ -32,24 +29,24 @@ def feast_format(fmeta: pd.DataFrame,
                  source_sink_column: str,
                  source_ids: list,
                  sink_ids: list,) -> pd.DataFrame:
-
     """
     Helper function to format metadata for FEAST.
     """
 
     # ensure that all sub-cats in SourceSink are represented
-    missing_ = list(set(fmeta[source_sink_column]) \
+    missing_ = list(set(fmeta[source_sink_column])
                     - set(source_ids + sink_ids))
     if len(missing_) > 0:
-        raise ValueError(('The sub-classes of %s must'
-                          ' be given as a source or sink: %s')\
-                          %(str(source_sink_column),
-                          ', '.join(map(str, missing_))))
+        raise ValueError(('All of the sub-classes of %s must'
+                          ' be given as a source or sink'
+                          'the sub-class(es) [%s] are missing.')
+                         % (str(source_sink_column),
+                             ', '.join(map(str, missing_))))
     # rename ids in source and sink columns (only if all rep.)
-    rename_ = {**{id_:'Source' for id_ in source_ids},
-                **{id_:'Sink' for id_ in sink_ids}}
+    rename_ = {**{id_: 'Source' for id_ in source_ids},
+               **{id_: 'Sink' for id_ in sink_ids}}
     fmeta[source_sink_column].replace(to_replace=rename_,
-                                            inplace=True)
+                                      inplace=True)
 
     return fmeta
 
@@ -60,7 +57,7 @@ def sourcetrack(table: pd.DataFrame,
                 source_sink_column: str,
                 source_ids: list,
                 sink_ids: list,
-                shared_id_column: str = DEFAULT_SHARED,
+                shared_id_column: str,
                 em_iterations: int = DEFAULT_EMITR,
                 different_sources: bool = DEFAULT_DIFFS) -> pd.DataFrame:
 
@@ -70,18 +67,28 @@ def sourcetrack(table: pd.DataFrame,
 
     # create metadata formatted for FEAST
     # check if there are shared ids.
+    # currently FEAST requires an id
+    # column but in future versions it will
+    # be an optional peram.
     if shared_id_column is not None:
         keep_cols = [environment_column,
                      source_sink_column,
                      shared_id_column]
-        rename_cols =  ['Env', 'SourceSink', 'id']
+        rename_cols = ['Env', 'SourceSink', 'id']
     else:
         keep_cols = [environment_column,
                      source_sink_column]
         rename_cols = ['Env', 'SourceSink']
-    # keep only those columns
+
+    # import and check all columns given are in dataframe
     metadata = metadata.to_dataframe()
     metadata.index = metadata.index.astype(str)
+    if not all([col_ in metadata.columns for col_ in keep_cols]):
+        raise ValueError('Not all columns given are present in the'
+                         ' sample metadata file. Please check that'
+                         ' the input columns are in the given metdata.')
+
+    # keep only those columns
     feast_meta = metadata.dropna(subset=keep_cols)
     feast_meta = feast_meta.loc[:, keep_cols]
 
@@ -93,21 +100,21 @@ def sourcetrack(table: pd.DataFrame,
 
     # format the sub-classes for source-sink
     feast_meta = feast_format(feast_meta,
-                                source_sink_column,
-                                source_ids,
-                                sink_ids)
+                              source_sink_column,
+                              source_ids,
+                              sink_ids)
     if shared_id_column is not None:
         # encode the shared SourceSink id column
         #  with numerics ranging from 1-N
         shared_ = set(metadata[shared_id_column])
         rename_ = {id_: i for i, id_ in enumerate(shared_)}
         feast_meta[shared_id_column].replace(to_replace=rename_,
-                                             inplace=True)                                 
+                                             inplace=True)
     # rename those columns for FEAST
     feast_meta.columns = rename_cols
 
     # if there are different sources
-    if different_sources == True:
+    if different_sources:
         different_sources = 1
     else:
         different_sources = 0
@@ -125,21 +132,21 @@ def sourcetrack(table: pd.DataFrame,
         table.to_csv(biom_fp, sep='\t', header=True)
         feast_meta.to_csv(map_fp, sep='\t', header=True)
 
-        # build command for feast 
+        # build command for FEAST
         cmd = ['source_tracking.R',
                biom_fp,
                map_fp,
                different_sources,
                summary_fp]
         cmd = list(map(str, cmd))
-    
+
         try:
             run_commands([cmd])
         except subprocess.CalledProcessError as e:
             raise Exception("An error was encountered while running FEAST"
                             " in R (return code %d), please inspect stdout"
                             " and stderr to learn more." % e.returncode)
-        
+
         # if run was sucessfull import the data and return
         proportions = pd.read_csv(summary_fp, index_col=0)
         proportions.index.name = "sampleid"
