@@ -24,7 +24,7 @@ PARAMETERS = {'metadata': Metadata,
               'source_ids': Str,
               'sink_ids': Str,
               'shared_id_column': Str,
-              'EM_iterations': Int,
+              'em_iterations': Int,
               'different_sources': Bool}
 # perams descriptions
 PARAMETERDESC = {'metadata': DESC_META,
@@ -33,7 +33,7 @@ PARAMETERDESC = {'metadata': DESC_META,
                  'source_ids': DESC_SOURCEID,
                  'sink_ids': DESC_SINKID,
                  'shared_id_column': DESC_SHARED,
-                 'EM_iterations': DESC_EMITR,
+                 'em_iterations': DESC_EMITR,
                  'different_sources': DESC_DIFFS}
 
 citations = qiime2.plugin.Citations.load('citations.bib',
