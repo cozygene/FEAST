@@ -3,6 +3,9 @@ import qiime2
 import pandas as pd
 import tempfile
 import subprocess
+from ._feast_defaults import (DEFAULT_DIFFS,
+                              DEFAULT_EMITR,
+                              DEFAULT_SHARED)
 
 
 def run_commands(cmds, verbose=True):
@@ -57,9 +60,9 @@ def sourcetrack(table: pd.DataFrame,
                 source_sink_column: str,
                 source_ids: list,
                 sink_ids: list,
-                shared_id_column: str = None,
-                EM_iterations: int = 1000,
-                different_sources: bool = True) -> pd.DataFrame:
+                shared_id_column: str = DEFAULT_SHARED,
+                EM_iterations: int = DEFAULT_EMITR,
+                different_sources: bool = DEFAULT_DIFFS) -> pd.DataFrame:
 
     # split the ids used for sources and sinks
     source_ids = source_ids.split(",")
