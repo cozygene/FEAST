@@ -58,5 +58,7 @@ plugin.methods.register_function(
     parameter_descriptions=PARAMETERDESC,
     output_descriptions={'mixing_proportions': DESC_MP},
     name='microbial source-tracking',
-    description=("TODO"),
+    description=('Runs microbial source tracking through'
+                 '  Fast Expectation-mAximization microbial'
+                 ' Source Tracking (FEAST).'),
 )
