@@ -51,7 +51,7 @@ def feast_format(fmeta: pd.DataFrame,
     return fmeta
 
 
-def sourcetrack(table: pd.DataFrame,
+def microbialtracking(table: pd.DataFrame,
                 metadata: pd.DataFrame,
                 environment_column: str,
                 source_sink_column: str,

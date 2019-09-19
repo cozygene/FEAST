@@ -7,7 +7,7 @@ from q2_types.feature_table import (FeatureTable,
                                     Frequency,
                                     RelativeFrequency)
 
-from ._method import sourcetrack
+from ._method import microbialtracking
 from ._feast_defaults import (DESC_META, DESC_ENVC,
                               DESC_SSC, DESC_SOURCEID,
                               DESC_SINKID, DESC_SHARED,
@@ -40,7 +40,7 @@ citations = qiime2.plugin.Citations.load('citations.bib',
                                          package='q2_FEAST')
 
 plugin = qiime2.plugin.Plugin(
-    name='FEAST',
+    name='feast',
     version=__version__,
     website="https://github.com/cozygene/FEAST",
     citations=[citations['Shenhav2019-ca']],
@@ -50,7 +50,7 @@ plugin = qiime2.plugin.Plugin(
     package='q2_FEAST')
 
 plugin.methods.register_function(
-    function=sourcetrack,
+    function=microbialtracking,
     inputs={'table': FeatureTable[Frequency]},
     parameters=PARAMETERS,
     outputs=[('mixing_proportions', FeatureTable[RelativeFrequency])],

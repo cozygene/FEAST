@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 from biom import Table
 from qiime2 import Artifact, Metadata
-from q2_FEAST._method import sourcetrack
+from q2_FEAST._method import microbialtracking
 from numpy.testing import assert_allclose
 
 
@@ -33,15 +33,14 @@ class TestFEAST(unittest.TestCase):
     def test_sourcetrack_multi(self):
 
         # run FEAST mixed source tracker
-        res_mpdf = sourcetrack(self.q2bt_multi,
-                               self.q2mf_multi,
-                               self.envcol,
-                               self.sourcesinkcol,
-                               self.sourceids,
-                               self.sinkids,
-                               self.sharedidcolumn,
-                               em_iterations = 5000)
-        # res_mpdf.to_csv('data/exp-mixed-mp.tsv', sep='\t')
+        res_mpdf = microbialtracking(self.q2bt_multi,
+                                     self.q2mf_multi,
+                                     self.envcol,
+                                     self.sourcesinkcol,
+                                     self.sourceids,
+                                     self.sinkids,
+                                     self.sharedidcolumn,
+                                     em_iterations = 5000)
         res_ = res_mpdf.loc[self.exp_mixed.index,
                             'Unknown'].values
         exp_ = self.exp_mixed.loc[:, 'Unknown'].values
@@ -51,24 +50,24 @@ class TestFEAST(unittest.TestCase):
 
         # test missing id
         with self.assertRaises(ValueError):
-            sourcetrack(self.q2bt_multi,
-                        self.q2mf_multi,
-                        self.envcol,
-                        self.sourcesinkcol,
-                        'Sour',
-                        self.sinkids,
-                        self.sharedidcolumn)
+            microbialtracking(self.q2bt_multi,
+                              self.q2mf_multi,
+                              self.envcol,
+                              self.sourcesinkcol,
+                              'Sour',
+                              self.sinkids,
+                              self.sharedidcolumn)
 
         # test bad column
         with self.assertRaises(ValueError):
-            sourcetrack(self.q2bt_multi,
-                        self.q2mf_multi,
-                        'oh-no-bad-bad',
-                        self.sourcesinkcol,
-                        self.sourceids,
-                        self.sinkids,
-                        self.sharedidcolumn,
-                        em_iterations=100)
+            microbialtracking(self.q2bt_multi,
+                              self.q2mf_multi,
+                              'oh-no-bad-bad',
+                              self.sourcesinkcol,
+                              self.sourceids,
+                              self.sinkids,
+                              self.sharedidcolumn,
+                              em_iterations=100)
 
 
 if __name__ == "__main__":
