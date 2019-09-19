@@ -28,7 +28,7 @@ pip install git+https://github.com/cozygene/FEAST.git
 Finally, you can test the installation with the following unittests.
 
 ```shell
-make tests
+make test
 ```
 ## Running q2-FEAST microbial tracking
 
