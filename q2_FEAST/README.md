@@ -52,14 +52,15 @@ To run FEAST with this example data:
 ```shell
 
 qiime feast microbialtracking 
---i-table example-table-multi.qza 
---m-metadata-file example-metadata-multi.qza 
---p-environment-column Env
---p-source-sink-column SourceSink 
---p-source-ids Source,Sink
---p-shared-id-column id 
---p-em-iterations 1000 --p-different-sources 
---o-mixing-proportions Test_FEAST 
+  --i-table example-table-multi.qza 
+  --m-metadata-file example-metadata-multi.qza 
+  --p-environment-column Env
+  --p-source-sink-column SourceSink 
+  --p-source-ids Source
+  --p-sink-ids Sink
+  --p-shared-id-column id 
+  --p-em-iterations 1000 --p-different-sources 
+  --o-mixing-proportions Test_FEAST 
 ```
 
 ```
