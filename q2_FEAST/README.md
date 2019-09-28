@@ -63,8 +63,6 @@ qiime feast microbialtracking \
   --o-mixing-proportions Test_FEAST 
 ```
 
-```
-
 The output is an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1.
 
 
