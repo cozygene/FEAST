@@ -18,7 +18,7 @@ setup(
     author_email="liashenhav@gmail.com",
     description="Fast Expectation-mAximization microbial Source Tracking (FEAST)",
     license='cc-by-sa-4.0',
-    url="https://www.bioconductor.org/packages/devel/bioc/html/ALDEx2.html",
+    url="https://github.com/cozygene/FEAST",
     entry_points={
         'qiime2.plugins': ['q2-FEAST=q2_FEAST.plugin_setup:plugin']
     },
