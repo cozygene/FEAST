@@ -10,7 +10,7 @@ import versioneer
 from setuptools import setup, find_packages
 
 setup(
-    name="q2-FEAST",
+    name="feast",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
@@ -20,11 +20,11 @@ setup(
     license='cc-by-sa-4.0',
     url="https://github.com/cozygene/FEAST",
     entry_points={
-        'qiime2.plugins': ['q2-FEAST=q2_FEAST.plugin_setup:plugin']
+        'qiime2.plugins': ['feast=q2_feast.plugin_setup:plugin']
     },
-    scripts=['q2_FEAST/assets/source_tracking.R'],
+    scripts=['q2_feast/assets/source_tracking.R'],
     package_data={
-        "q2_FEAST": ['citations.bib'],
+        "q2_feast": ['citations.bib'],
     },
     zip_safe=False,
 )
