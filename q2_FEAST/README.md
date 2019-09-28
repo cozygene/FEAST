@@ -51,7 +51,7 @@ To run FEAST with this example data:
 
 ```shell
 
-qiime feast microbialtracking 
+qiime feast microbialtracking \
   --i-table example-table-multi.qza \
   --m-metadata-file example-metadata-multi.qza \
   --p-environment-column Env \
