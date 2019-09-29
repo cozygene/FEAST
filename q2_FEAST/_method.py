@@ -148,6 +148,14 @@ def microbialtracking(table: pd.DataFrame,
                             " and stderr to learn more." % e.returncode)
 
         # if run was sucessfull import the data and return
-        proportions = pd.read_csv(summary_fp, index_col=0)
+        proportions = pd.read_csv(summary_fp, index_col=0).fillna(0)
+        proportions.index = [ind_.split('_')[0]
+                             for ind_ in proportions.index]
+        proportions.columns = [ind_ if 'Unknown' in ind_\
+                                    else '_'.join(ind_.split('_')[1:])
+                               for ind_ in proportions.columns]
+        proportions = proportions.T
+        proportions = proportions.groupby(proportions.index).sum().T
         proportions.index.name = "sampleid"
+        
         return proportions

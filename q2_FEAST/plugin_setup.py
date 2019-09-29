@@ -37,7 +37,7 @@ PARAMETERDESC = {'metadata': DESC_META,
                  'different_sources': DESC_DIFFS}
 
 citations = qiime2.plugin.Citations.load('citations.bib',
-                                         package='q2_FEAST')
+                                         package='q2_feast')
 
 plugin = qiime2.plugin.Plugin(
     name='feast',
@@ -47,13 +47,13 @@ plugin = qiime2.plugin.Plugin(
     short_description=('Plugin for FEAST source-tracking'),
     description=('This is a QIIME 2 plugin supporting microbial'
                  ' source-tracking through FEAST.'),
-    package='q2_FEAST')
+    package='q2_feast')
 
 plugin.methods.register_function(
     function=microbialtracking,
     inputs={'table': FeatureTable[Frequency]},
     parameters=PARAMETERS,
-    outputs=[('mixing_proportions', FeatureTable[RelativeFrequency])],
+    outputs=[('mixing_proportions', FeatureTable[Frequency])],
     input_descriptions={'table': DESC_TBL},
     parameter_descriptions=PARAMETERDESC,
     output_descriptions={'mixing_proportions': DESC_MP},

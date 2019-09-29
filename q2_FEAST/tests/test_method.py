@@ -12,13 +12,23 @@ class TestFEAST(unittest.TestCase):
     def setUp(self):
 
         in_dir = os.path.dirname(os.path.abspath(__file__))
-        def get_file(dir_, file_): return os.path.join(dir_, 'data', file_)
+        # path goes to tutorial data
+        def get_file(dir_, file_): return os.path.join(dir_,
+                                                       os.pardir,
+                                                       'tutorials',
+                                                       'data',
+                                                       'DIABIMMUNE',
+                                                       file_)
+        # path goes to tutorial data
+        def get_test(dir_, file_): return os.path.join(dir_,
+                                                       'data',
+                                                       file_)
 
         # import multi test data
-        q2bt_multi = Artifact.load(get_file(in_dir, 'example-table-multi.qza'))
+        q2bt_multi = Artifact.load(get_file(in_dir, 'table-multi.qza'))
         self.q2bt_multi = q2bt_multi.view(Table).to_dataframe().T
         self.q2mf_multi = Metadata.load(
-            get_file(in_dir, 'example-metadata-multi.qza'))
+            get_file(in_dir, 'metadata-multi.qza'))
         # perams
         self.envcol = 'Env'
         self.sourcesinkcol = 'SourceSink'
@@ -26,7 +36,7 @@ class TestFEAST(unittest.TestCase):
         self.sinkids = 'Sink'
         self.sharedidcolumn = 'host_subject_id'
         # expected
-        self.exp_mixed = pd.read_csv(get_file(in_dir, 'exp-mixed-mp.tsv'),
+        self.exp_mixed = pd.read_csv(get_test(in_dir, 'exp-mixed-mp.tsv'),
                                      sep='\t',
                                      index_col=0)
 
