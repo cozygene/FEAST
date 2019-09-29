@@ -14,7 +14,7 @@ FEAST is a highly efficient Expectation-Maximization-based method that takes as 
 We first use FEAST in the context of a time-series.  Using FEAST for time-series analysis offers a quantitative way to characterize developmental microbial populations, such as the infant gut. In this context, we can leverage previous time-points and external sources to understand the origins of a specific, temporal community state. For instance, we can estimate if taxa in the infant gut originate from the birth canal, or if they are derived from some other external source at a later time point. To demonstrate this capability, we used a subset of the longitudinal data from Backhed et al. 2015, which contains gut microbiome samples from infants as well as from their corresponding mothers. In this analysis, we treated samples taken from the infants at age 12 months as sinks, considering respective earlier time points and maternal samples as sources.
 
 
-We provide a dataset for this example. Download the demo files <a href="https://github.com/cameronmartino/FEAST/tree/FEAST_beta/q2_FEAST/tests/data">here</a>.
+We provide a dataset for this example. Download the demo files <a href="https://github.com/cameronmartino/FEAST/q2_FEAST/tutorials/data/backhed">here</a>.
 
 To run FEAST with this example data:
 
