@@ -32,7 +32,7 @@ pip install git+https://github.com/cozygene/FEAST.git
 
 # Tutorial 
 
-A QIIME2 tutorial is available (here)[https://github.com/cozygene/FEAST/q2_feast/tutorials/DIABIMMUNE.md]
+A QIIME2 tutorial is available [here](https://github.com/cozygene/FEAST/q2_feast/tutorials/DIABIMMUNE.md)
 
 ## Running q2-FEAST microbial tracking
 
