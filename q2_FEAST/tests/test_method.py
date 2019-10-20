@@ -43,7 +43,7 @@ class TestFEAST(unittest.TestCase):
     def test_sourcetrack_multi(self):
 
         # run FEAST mixed source tracker (False is slow)
-        tres_all = microbialtracking(self.q2bt_multi,
+        res_mpdf = microbialtracking(self.q2bt_multi,
                                      self.q2mf_multi,
                                      self.envcol,
                                      self.sourcesinkcol,
@@ -53,9 +53,9 @@ class TestFEAST(unittest.TestCase):
                                      different_sources = True,
                                      em_iterations = 5000)
         #tres_all.to_csv('/Users/cameronmartino/Downloads/testing-feast.tsv', sep='\t')                           
-        res_ = res_mpdf.loc[self.exp_mixed.index,
-                            'Unknown'].values
-        exp_ = self.exp_mixed.loc[:, 'Unknown'].values
+        res_ = res_mpdf.loc['Unknown',
+                            self.exp_mixed.columns].values
+        exp_ = self.exp_mixed.loc['Unknown', :].values
         assert_allclose(res_, exp_, atol=.50)
 
     def test_sourcetrack_value_errors(self):
