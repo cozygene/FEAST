@@ -2,6 +2,7 @@ import os
 import tempfile
 import subprocess
 import pandas as pd
+from qiime2 import Metadata
 from ._feast_defaults import (DEFAULT_DIFFS,
                               DEFAULT_EMITR)
 
@@ -52,14 +53,14 @@ def feast_format(fmeta: pd.DataFrame,
 
 
 def microbialtracking(table: pd.DataFrame,
-                metadata: pd.DataFrame,
-                environment_column: str,
-                source_sink_column: str,
-                source_ids: list,
-                sink_ids: list,
-                shared_id_column: str,
-                em_iterations: int = DEFAULT_EMITR,
-                different_sources: bool = DEFAULT_DIFFS) -> pd.DataFrame:
+                      metadata: Metadata,
+                      environment_column: str,
+                      source_sink_column: str,
+                      source_ids: list,
+                      sink_ids: list,
+                      shared_id_column: str,
+                      em_iterations: int = DEFAULT_EMITR,
+                      different_sources: bool = DEFAULT_DIFFS) -> pd.DataFrame:
 
     # split the ids used for sources and sinks
     source_ids = source_ids.split(",")
@@ -82,7 +83,13 @@ def microbialtracking(table: pd.DataFrame,
 
     # import and check all columns given are in dataframe
     metadata = metadata.to_dataframe()
+    # replace seperation character in metadata
+    metadata = metadata.replace('_', '-',
+                                regex=True)
     metadata.index = metadata.index.astype(str)
+    metadata.index = [ind.replace('_', '-')
+                      for ind in metadata.index]
+    # check columns are in metadata
     if not all([col_ in metadata.columns for col_ in keep_cols]):
         raise ValueError('Not all columns given are present in the'
                          ' sample metadata file. Please check that'
@@ -148,14 +155,7 @@ def microbialtracking(table: pd.DataFrame,
                             " and stderr to learn more." % e.returncode)
 
         # if run was sucessfull import the data and return
-        proportions = pd.read_csv(summary_fp, index_col=0).fillna(0)
-        proportions.index = [ind_.split('_')[0]
-                             for ind_ in proportions.index]
-        proportions.columns = [ind_ if 'Unknown' in ind_\
-                                    else '_'.join(ind_.split('_')[1:])
-                               for ind_ in proportions.columns]
-        proportions = proportions.T
-        proportions = proportions.groupby(proportions.index).sum().T
+        proportions = pd.read_csv(summary_fp, index_col=0).T
         proportions.index.name = "sampleid"
-        
+
         return proportions

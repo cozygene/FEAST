@@ -29,23 +29,20 @@ qiime feast microbialtracking \
   --p-shared-id-column host_subject_id \
   --p-em-iterations 1000 \
   --p-different-sources \
-  --o-mixing-proportions data/backhed/mixing-proportions.qza 
+  --o-proportions data/backhed/mixing-proportions.qza 
 ```
 ```Saved FeatureTable[Frequency] to: data/backhed/tackingresults.qza```
 
 The output is an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1.
 
-We can visualize these results using a heatmap in QIIME2.
+We can visualize these results using a stacked barplot provided in FEAST.
 
 ```shell
-qiime feature-table heatmap\
-  --i-table data/backhed/mixing-proportions.qza  \
-  --m-metadata-file data/backhed/metadata-multi.qza \
-  --m-metadata-column Env \
-  --p-no-normalize\
-  --p-color-scheme RdBu\
-  --o-visualization data/backhed/heatmap.qzv
+qiime feast barplot \
+  --i-mixing-proportions data/backhed/mixing-proportions.qza\
+  --m-metadata-file data/backhed/metadata-multi.qza\
+  --o-visualization data/backhed/barplot.qzv
 ```
-```Saved FeatureTable[Frequency] to: data/backhed/heatmap.qzv```
+```Saved FeatureTable[Frequency] to: data/backhed/barplot.qzv```
 
-![](etc/backhed-feature-table-heatmap.png) 
+![](etc/backhed-barplot.png) 

@@ -6,7 +6,10 @@ from qiime2.plugin import (Int, Metadata,
 from q2_types.feature_table import (FeatureTable,
                                     Frequency,
                                     RelativeFrequency)
+from q2_types.feature_data import (FeatureData,
+                                   Taxonomy)
 
+from ._visualizer import barplot
 from ._method import microbialtracking
 from ._feast_defaults import (DESC_META, DESC_ENVC,
                               DESC_SSC, DESC_SOURCEID,
@@ -53,10 +56,10 @@ plugin.methods.register_function(
     function=microbialtracking,
     inputs={'table': FeatureTable[Frequency]},
     parameters=PARAMETERS,
-    outputs=[('mixing_proportions', FeatureTable[Frequency])],
+    outputs=[('proportions', FeatureTable[Frequency])],
     input_descriptions={'table': DESC_TBL},
     parameter_descriptions=PARAMETERDESC,
-    output_descriptions={'mixing_proportions': DESC_MP},
+    output_descriptions={'proportions': DESC_MP},
     name='microbial source-tracking',
     description=('A major challenge of analyzing the compositional '
                  'structure of microbiome data is identifying its '
@@ -73,4 +76,17 @@ plugin.methods.register_function(
                  ' contamination, tracking the formation of developing'
                  ' microbial communities, as well as distinguishing '
                  'and characterizing bacteria-related health conditions.'),
+)
+
+plugin.visualizers.register_function(
+    function=barplot,
+    inputs={'mixing_proportions': FeatureTable[Frequency]},
+    parameters={'metadata': Metadata},
+    input_descriptions={'mixing_proportions': DESC_MP},
+    parameter_descriptions={'metadata': DESC_META},
+    name='Visualize source-contributions with an interactive bar plot',
+    description='This visualizer produces an interactive barplot visualization'
+                ' of sources. Interactive features include multi-level '
+                'sorting, plot recoloring, sample relabeling, and SVG '
+                'figure export.'
 )

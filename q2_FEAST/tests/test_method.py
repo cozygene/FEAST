@@ -17,7 +17,7 @@ class TestFEAST(unittest.TestCase):
                                                        os.pardir,
                                                        'tutorials',
                                                        'data',
-                                                       'DIABIMMUNE',
+                                                       'backhed',
                                                        file_)
         # path goes to tutorial data
         def get_test(dir_, file_): return os.path.join(dir_,
@@ -42,15 +42,17 @@ class TestFEAST(unittest.TestCase):
 
     def test_sourcetrack_multi(self):
 
-        # run FEAST mixed source tracker
-        res_mpdf = microbialtracking(self.q2bt_multi,
+        # run FEAST mixed source tracker (False is slow)
+        tres_all = microbialtracking(self.q2bt_multi,
                                      self.q2mf_multi,
                                      self.envcol,
                                      self.sourcesinkcol,
                                      self.sourceids,
                                      self.sinkids,
                                      self.sharedidcolumn,
+                                     different_sources = True,
                                      em_iterations = 5000)
+        #tres_all.to_csv('/Users/cameronmartino/Downloads/testing-feast.tsv', sep='\t')                           
         res_ = res_mpdf.loc[self.exp_mixed.index,
                             'Unknown'].values
         exp_ = self.exp_mixed.loc[:, 'Unknown'].values
