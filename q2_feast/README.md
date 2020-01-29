@@ -57,12 +57,17 @@ The QIIME 2 implementation of FEAST contains two steps.
 This section contains instructions on how to set up a development environment
 of q2-FEAST, at least as of writing.
 
-1. Activate your QIIME 2 environment.
+1. Activate your QIIME 2 conda environment.
+
 2. Fork this git repository, then clone your fork to your system.
-3. Install the R dependencies as shown above (`conda install -c bioconda ...`)
+
+3. Install the R dependencies as shown in the installation instructions at the
+   top of this file (`conda install -c bioconda ...`).
    However, don't install FEAST using `devtools::install_github()` quite yet.
+
 4. Using your favorite shell (e.g. bash), navigate into the folder this fork
    was installed into (the folder that contains this `README.md`).
+
 5. Open up R, then run the
    [following commands](https://stackoverflow.com/a/34513358/10730311):
 ```r
@@ -70,12 +75,14 @@ of q2-FEAST, at least as of writing.
 > install()
 ```
    This will install the FEAST R package from the current directory.
+
 6. Exit out of R back to the shell. Run the following command:
 ```bash
 $ pip install -e .[dev]
 ```
    This will install the q2-FEAST package from the current directory, along
 with its `dev` requirements (which are needed to run its tests).
+
 7. We're almost done! Run the following commands to test that FEAST and
    q2-FEAST are properly installed:
 ```bash
