@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 from biom import Table
 from qiime2 import Artifact, Metadata
-from q2_FEAST._method import microbialtracking
+from q2_feast._method import microbialtracking
 from numpy.testing import assert_allclose
 
 
