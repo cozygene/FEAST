@@ -70,23 +70,23 @@ of q2-FEAST, at least as of writing.
 
 5. Open up R, then run the
    [following commands](https://stackoverflow.com/a/34513358/10730311):
-```r
-> library(devtools)
-> install()
-```
+   ```r
+   > library(devtools)
+   > install()
+   ```
    This will install the FEAST R package from the current directory.
 
 6. Exit out of R back to the shell. Run the following command:
-```bash
-$ pip install -e .[dev]
-```
+   ```bash
+   $ pip install -e .[dev]
+   ```
    This will install the q2-FEAST package from the current directory, along
 with its `dev` requirements (which are needed to run its tests).
 
 7. We're almost done! Run the following commands to test that FEAST and
    q2-FEAST are properly installed:
-```bash
-$ qiime dev refresh-cache
-$ make test
-```
+   ```bash
+   $ qiime dev refresh-cache
+   $ make test
+   ```
    If these commands succeed, you should be good to start developing!
