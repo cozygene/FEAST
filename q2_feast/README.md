@@ -30,6 +30,37 @@ Now we will install FEAST and the q2-plugin.
 pip install git+https://github.com/cozygene/FEAST.git
 ```
 
+## Setting up a development environment for q2-FEAST
+This section contains instructions on how to set up a development environment
+of q2-FEAST, at least as of writing.
+
+1. Activate your QIIME 2 environment.
+2. Fork this git repository, then clone your fork to your system.
+3. Install the R dependencies as shown above (`conda install -c bioconda ...`)
+   However, don't install FEAST using `devtools::install_github()` quite yet.
+4. Using your favorite shell (e.g. bash), navigate into the folder this fork
+   was installed into (the folder that contains this `README.md`).
+5. Open up R, then run the
+   [following commands](https://stackoverflow.com/a/34513358/10730311):
+```r
+> library(devtools)
+> install()
+```
+   This will install the FEAST R package from the current directory.
+6. Exit out of R back to the shell. Run the following command:
+```bash
+$ pip install -e .[dev]
+```
+   This will install the q2-FEAST package from the current directory, along
+with its `dev` requirements (which are needed to run its tests).
+7. We're almost done! Run the following commands to test that FEAST and
+   q2-FEAST are properly installed:
+```bash
+$ qiime dev refresh-cache
+$ make test
+```
+   If these commands succeed, you should be good to start developing.
+
 # Tutorial 
 
 A QIIME2 tutorial is available [here](https://github.com/cozygene/FEAST/q2_feast/tutorials/DIABIMMUNE.md)
