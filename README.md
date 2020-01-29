@@ -21,7 +21,6 @@ Software Requirements and dependencies
 Packages <- c("Rcpp", "RcppArmadillo", "vegan", "dplyr", "reshape2", "gridExtra", "ggplot2", "ggthemes")
 install.packages(Packages)
 lapply(Packages, library, character.only = TRUE)
-
 ```
 
 
