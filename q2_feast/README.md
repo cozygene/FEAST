@@ -69,14 +69,19 @@ of q2-FEAST, at least as of writing.
    was installed into (the folder that contains this `README.md`).
 
 5. Open up R, then run the
-   [following commands](https://stackoverflow.com/a/34513358/10730311):
+   [following command](https://stackoverflow.com/a/34513358/10730311):
    ```r
-   > library(devtools)
-   > install()
+   > devtools::install()
    ```
    This will install the FEAST R package from the current directory.
+   If you get prompted to update package versions, it's probably fine to do
+   that.
 
-6. Exit out of R back to the shell. Run the following command:
+6. We've installed FEAST's R prerequisites, as well as the actual FEAST R
+   package, but we haven't installed the Python infrastructure needed to
+   get this working with QIIME 2 yet. Let's do that!
+
+   Exit out of R back to the shell. Run the following command:
    ```bash
    $ pip install -e .[dev]
    ```
