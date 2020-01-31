@@ -41,8 +41,7 @@
 #' }
 #'
 #' @export
-FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag,
-                  dir_path, outfile){
+FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag, dir_path = NULL, outfile = NULL){
 
   ###1. Parse metadata and check it has the correct hearer (i.e., Env, SourceSink,	id)
   if(sum(colnames(metadata)=='Env')==0) stop("The metadata file must contain an 'Env' column naming the source environment for each sample.")
@@ -143,9 +142,11 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
   colnames(proportions_mat) <- c(envs_sources, "Unknown")
   rownames(proportions_mat) <- envs_sink
   # proportions_mat[is.na(proportions_mat)] <- 999
+  if(!is.null(dir_path)){
+    setwd(dir_path)
+    write.table(proportions_mat, file = paste0(outfile,"_source_contributions_matrix.txt"), sep = "\t")
+  }
 
-  setwd(dir_path)
-  write.table(proportions_mat, file = paste0(outfile,"_source_contributions_matrix.txt"), sep = "\t")
   return(proportions_mat)
 
 }
