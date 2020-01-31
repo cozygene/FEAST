@@ -129,7 +129,6 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
   sources_sum <- apply(sources, 2 ,sum)
 
 
-  unknown_source <- c()
 
   if(n_sources > 1){
 
