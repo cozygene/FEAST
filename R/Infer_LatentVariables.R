@@ -169,7 +169,7 @@ unknown_initialize_1 <- function(sources, sink, n_sources){
     if(length(ind_cor_all) > 1){
 
       cor_abundance <- round(apply(sources[,ind_cor_all], 2, min)/2) #take the min abundnace of the 'cor'
-      unknown_source[ind_cor_all] <- 0
+      unknown_source[ind_cor_all] <- cor_abundance
 
 
     }
