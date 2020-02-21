@@ -1,0 +1,5 @@
+# a few things we don't want to include in the repo -- based on github's
+# default .gitignore for python repos
+.coverage
+__pycache__/
+*.egg-info/

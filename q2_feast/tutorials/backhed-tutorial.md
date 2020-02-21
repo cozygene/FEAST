@@ -21,7 +21,7 @@ To run FEAST with this example data:
 ```shell
 qiime feast microbialtracking \
   --i-table data/backhed/table-multi.qza \
-  --m-metadata-file data/backhed/metadata-multi.qza \
+  --m-metadata-file data/backhed/metadata-multi.tsv \
   --p-environment-column Env \
   --p-source-sink-column SourceSink \
   --p-source-ids Source \
@@ -40,7 +40,7 @@ We can visualize these results using a stacked barplot provided in FEAST.
 ```shell
 qiime feast barplot \
   --i-mixing-proportions data/backhed/mixing-proportions.qza\
-  --m-metadata-file data/backhed/metadata-multi.qza\
+  --m-metadata-file data/backhed/metadata-multi.tsv \
   --o-visualization data/backhed/barplot.qzv
 ```
 ```Saved FeatureTable[Frequency] to: data/backhed/barplot.qzv```

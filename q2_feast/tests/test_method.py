@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 from biom import Table
 from qiime2 import Artifact, Metadata
-from q2_FEAST._method import microbialtracking
+from q2_feast._method import microbialtracking
 from numpy.testing import assert_allclose
 
 
@@ -28,7 +28,7 @@ class TestFEAST(unittest.TestCase):
         q2bt_multi = Artifact.load(get_file(in_dir, 'table-multi.qza'))
         self.q2bt_multi = q2bt_multi.view(Table).to_dataframe().T
         self.q2mf_multi = Metadata.load(
-            get_file(in_dir, 'metadata-multi.qza'))
+            get_file(in_dir, 'metadata-multi.tsv'))
         # perams
         self.envcol = 'Env'
         self.sourcesinkcol = 'SourceSink'
