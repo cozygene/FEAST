@@ -1,0 +1,36 @@
+Package: FEAST
+Type: Package
+Title: FEAST: fast expectation-maximization for microbial source tracking
+Version: 0.1.0
+Author: Authors@R: person("Liat", "Shenhav", email = "liashenhav@gmail.com",
+  role = c("aut", "cre"))
+Maintainer: The package maintainer <liashenhav@gmail.com>
+Description: A major challenge of analyzing the compositional 
+    structure of microbiome data is identifying its potential origins. 
+    Here, we introduce fast expectation-maximization microbial source 
+    tracking (FEAST), a ready-to-use scalable framework that can 
+    simultaneously estimate the contribution of thousands of potential 
+    source environments in a timely manner, thereby helping unravel the 
+    origins of complex microbial communities. The information gained from 
+    FEAST may provide insight into quantifying contamination, tracking the 
+    formation of developing microbial communities, as well as distinguishing 
+    and characterizing bacteria-related health conditions.
+Depends: R (>= 3.4.4)
+License: This work is licensed under the Creative Commons 
+    Attribution-Non-Commercial-ShareAlike 4.0 International License. 
+Encoding: UTF-8
+LazyData: true
+Imports:
+    vegan,
+    dplyr,
+    reshape2,
+    ggplot2,
+    cowplot,
+    ggthemes,
+    gridExtra,
+    Rcpp,
+    RcppArmadillo
+LinkingTo: 
+    Rcpp, 
+    RcppArmadillo
+RoxygenNote: 6.1.1

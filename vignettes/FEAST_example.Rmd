@@ -1,0 +1,112 @@
+---
+title: "FEAST Example Usage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{FEAST Example Usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "##",
+  highlight = TRUE,
+  prompt = FALSE,
+  results = "markup"
+)
+```
+
+This vignette provides a basic example of using *FEAST* (Fast Expectation-mAximization microbial Source Tracking) for microbial source tracking. 
+*FEAST* is a ready-to-use scalable framework that can simultaneously estimate the contribution of thousands of potential source environments in a timely manner, thereby helping unravel the origins of complex microbial communities. 
+
+
+```{r install_dependencies, echo=T, results='hide', message=F, warning=F}
+Packages <- c("Rcpp", "RcppArmadillo", "vegan", "dplyr", "reshape2", "gridExtra", "ggplot2", "ggthemes")
+# install.packages(Packages)
+lapply(Packages, library, character.only = TRUE)
+```
+
+## Installation
+
+install *FEAST* using devtools
+
+```{r install_FEAST, echo=T, results='hide', message=F, warning=F}
+devtools::install_github("cozygene/FEAST", ref = "FEAST_beta")
+```
+
+
+
+```{r load, echo=T, results='hide', message=F, warning=F}
+library(FEAST)
+
+```
+
+## Input Format
+
+The input to *FEAST* is composed of two tab-separated ASCII text files :
+
+(1) count table - An m by n count matrix, where m is the number samples and n is the number of taxa. Row names are the sample ids ('SampleID'). Column names are the taxa ids. Then every consecutive column contains read counts for each sample. Note that this order must be respected.
+
+(2) metadata - An m by 3 table, where m is the number samples. The metadata table has three colunms (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The fourth column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenatio, the sources ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
+
+Load the datasets as follows:
+
+```{r example_input}
+metadata <- Load_metadata(metadata_path = "~/FEAST/Data_files/metadata_example_multi.txt")
+otus <- Load_CountMatrix(CountMatrix_path = "~/FEAST/Data_files/otu_example_multi.txt")
+```
+
+
+## Run *FEAST*
+
+As input, *FEAST* takes mandatory arguments:
+
+- _C_ - An _m_ by _n_ count matrix, where _m_ is the number samples and _n_ is the number of taxa.
+- _metadata_ - An _m_ by 3 table, where _m_ is the number samples. The metadata table has three colunms (i.e., 'Env', 'SourceSink', 'id').
+- _EM_iterations_ - A numeric value indicating the number of EM iterations (default 1000).
+- _COVERAGE_ - A numeric value indicating the rarefaction depth (default = minimal sequencing depth within each group of sink and its corresponding sources).
+- _different_sources_flag_ - A boolian value indicating the source-sink assignment. different_sources_flag = 1 if different sources are assigned to each sink , otherwise = 0.
+- _dir_path_ - A path to an output .txt file.
+- _outfile_ - the prefix for saving the output file.
+
+Run FEAST, saving the output with prefix "demo".
+
+```{r analyze_example}
+FEAST_output <- FEAST(C = otus, metadata = metadata, different_sources_flag = 1, dir_path = "~/FEAST/Data_files/",
+                      outfile="demo")
+
+```
+
+*FEAST* returns an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1. Pij is the contribution of source j to sink i. If Pij == NA it indicateds that source j was not used in the analysis of sink i. 
+*FEAST* will save the file "demo_FEAST.txt" (a file containing matrix P) .
+
+
+##Graphical representation: 
+
+Plot and save a stacked barplot of source contributions to the first K sink samples.
+As input, *PlotSourceContribution* takes mandatory arguments:
+
+ - _SinkNames_  - A vector with the sink names to plot.
+ - _SourceNames_ -  A vector with all the sources' names.
+ - _Same_sources_flag_ -  A boolian value indicating the source-sink plotting assignment. Same_sources_flag = 1 if the same sources are assigned to the pre-defined sink samples , otherwise = 0.
+ - _mixing_proportions_ -  A list of vectors, where entry i corresponds to the vector of source
+contributions (summing to 1) to sink i.
+- _dir_path_ -  A path to an output .png file.
+- _Plot_title_ - Plot's title and output .png file's name.
+- _N_  - Number of barplot in each output .png file.
+
+```{r plot_example, warning=FALSE}
+K = 2 #number of sinks to plot
+PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(1:K)],
+                       SourceNames = colnames(FEAST_output), dir_path = "~/FEAST/Data_files/",
+                       mixing_proportions = FEAST_output, Plot_title = "Test_",Same_sources_flag = 0, N = 2)
+```
+
+
+
+
+
+
+
+
