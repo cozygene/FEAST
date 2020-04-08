@@ -30,7 +30,7 @@ Installation
 
 *FEAST* will be available on QIIME 2 very soon. Until then you can you can simply install *FEAST* using **devtools**: 
 ```
-devtools::install_github("cozygene/FEAST")
+devtools::install_github("cozygene/FEAST", ref = "Nonunique_sources")
 ```
 
 ## Usage
