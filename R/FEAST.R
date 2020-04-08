@@ -71,7 +71,7 @@ FEAST <- function (C, metadata, EM_iterations = 1000, COVERAGE = NULL,
   common.sample.ids <- intersect(unique(metadata$SampleID), rownames(C))
   C <- C[common.sample.ids, ]
   if(length(unique(metadata$SampleID)) == length(metadata$SampleID))
-    metadata <- metadata[common.sample.ids, ]
+      metadata <- metadata[which(metadata$SampleID %in% common.sample.ids), ]
   if (length(common.sample.ids) <= 1) {
     message <- paste(sprintf("Error: there are %d sample ids in common "), 
                      "between the metadata file and data table")
