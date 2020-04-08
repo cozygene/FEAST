@@ -14,9 +14,10 @@
 #'
 #' @param metadata_path A path to a tab-separated ASCII text metadata file.
 #' @export
-Load_metadata <- function(metadata_path){
-
-  metadata <- read.csv(metadata_path,h=T, sep = '\t', row.names = 1,check=FALSE)
+Load_metadata <- function (metadata_path) 
+{
+  metadata <- read.csv(metadata_path, h = T, sep = "\t",
+                       check = FALSE)
   return(metadata)
 }
 
