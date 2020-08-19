@@ -114,9 +114,26 @@ def microbialtracking(table: pd.DataFrame,
         # encode the shared SourceSink id column
         #  with numerics ranging from 1-N
         shared_ = set(metadata[shared_id_column])
-        rename_ = {id_: i for i, id_ in enumerate(shared_)}
+        rename_ = {id_: str(int(i) + 1) for i, id_ in enumerate(shared_)}
         feast_meta[shared_id_column].replace(to_replace=rename_,
                                              inplace=True)
+    if not different_sources or shared_id_column is None:
+        # get source-sink 
+        source_index = feast_meta[feast_meta[source_sink_column] == 'Source'].index
+        sink_index = feast_meta[feast_meta[source_sink_column] == 'Sink'].index
+        # set sources IDs to NA
+        feast_meta.loc[source_index, shared_id_column] = 'NA'
+        # give sinks IDs (each sink gets a different ID)
+        for i, sid_ in enumerate(sink_index):
+            feast_meta.loc[sid_, shared_id_column] = str(int(i) + 1)
+        #shared_ = set(metadata.loc[sink_index, shared_id_column].values)
+        #rename_ = {id_: str(int(i)) for i, id_ in enumerate(shared_)}
+        #feast_meta[shared_id_column].replace(to_replace=rename_,
+        #                                     inplace=True)
+
+        # make sure that if no "shared_id_column" supplied IDs not used
+        different_sources = False
+
     # rename those columns for FEAST
     feast_meta.columns = rename_cols
 
@@ -129,7 +146,7 @@ def microbialtracking(table: pd.DataFrame,
     # save all intermediate files into tmp dir
     with tempfile.TemporaryDirectory() as temp_dir_name:
         # save the tmp dir locations
-        biom_fp = os.path.join(temp_dir_name, 'input.tsv.biom')
+        biom_fp = os.path.join(temp_dir_name, 'input.tsv')
         map_fp = os.path.join(temp_dir_name, 'input.map.txt')
         summary_fp = os.path.join(temp_dir_name, 'output.proportions.txt')
 
@@ -141,10 +158,10 @@ def microbialtracking(table: pd.DataFrame,
 
         # build command for FEAST
         cmd = ['source_tracking.R',
-               biom_fp,
-               map_fp,
-               different_sources,
-               summary_fp]
+                biom_fp,
+                map_fp,
+                different_sources,
+                summary_fp]
         cmd = list(map(str, cmd))
 
         try:
