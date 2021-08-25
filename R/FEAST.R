@@ -146,6 +146,6 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
 
   setwd(dir_path)
   write.table(proportions_mat, file = paste0(outfile,"_source_contributions_matrix.txt"), sep = "\t")
-  return(proportions_mat, FEAST_output)
+  return(list = c(proportions_mat, FEAST_output))
 
 }
