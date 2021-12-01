@@ -125,8 +125,16 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
 
     sinks <- as.matrix(FEAST_rarefy(t(as.matrix(C[test.ix,])), COVERAGE))
 
+    unknown_initialize_flag = ifelse(method == 'stensl', 2, 1)
     ###10. Estimate source proportions for each sink
-    FEAST_output<-Infer.SourceContribution(source=sources, sinks = t(sinks), env = envs[train.ix], em_itr = EM_iterations, COVERAGE = COVERAGE)
+    FEAST_output<-Infer.SourceContribution(
+      source=sources,
+      sinks = t(sinks),
+      env = envs[train.ix],
+      em_itr = EM_iterations,
+      COVERAGE = COVERAGE,
+      method=method,
+      unknown_initialize_flag=unknown_initialize_flag)
 
     idx.sources <- which(all_sources_sampleID %in% rownames(metadata)[train.ix])
     proportions_mat[it,c(idx.sources, idx.unknown)] <- FEAST_output$data_prop[,1]

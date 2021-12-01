@@ -1,4 +1,5 @@
 
+library(glmnet)
 
 #E - step
 E <- function(alphas, sources){
@@ -218,9 +219,93 @@ unknown_initialize <- function(sources, sink, n_sources){
 
 }
 
+lsq_glmnet_l1l2 <- function(
+  sink, sources,
+  l1l2=1, lambda=1e-6,
+  normalize=T) {
+
+  if (normalize) {
+    sources <- sources / rowSums(sources)
+    sink <- sink / sum(sink)
+  }
+
+  Amat <- model.matrix(~Sources, list(Sources=t(sources)))
+  result <- glmnet(Amat, sink, alpha=l1l2, lambda=lambda, lower.limits=0, intercept=F)
+
+  contr <- result$beta[2:length(result$beta)]
+
+  return (contr)
+}
+
+lsq_procedure <- function(sources, sink, default_known=0.99) {
+  weights_l1 <- lsq_glmnet_l1l2(
+    sink,
+    sources,
+    normalize=F,
+    l1l2=1)
+
+  # 1. The alpha init
+  lsq_init <- weights_l1 / sum(weights_l1)
+  alpha_init <- c(lsq_init*default_known, (1-default_known)) # appending default unknown p
+
+  # 2. The unknown init
+  max_source <- sources[which.max(lsq_init),]
+
+  # We scale the max source according to its given weight
+  mixed_max <- max_source * max(lsq_init)
+  unknown_init <- sink - mixed_max
+
+  unknown_init[unknown_init < 0] <- 0   # clip at zero
+
+  return (list(
+    lsq=weights_l1,
+    alpha=alpha_init,
+    unknown=unknown_init
+  ))
+}
+
+LsqResid.Procedure <- function(rare_sink, rare_sources) {
+  print('Performing Lsq+Residual Procedure...')
+
+  blob <- lsq_procedure(
+    rare_sources,
+    rare_sink
+  )
+
+  # save the max-estimated unknown for later analysis
+  blob$unknown.maxest <- blob$unknown
+
+  # compute Lsq error
+  nonzero <- rare_sink != 0
+  slen <- length(rare_sink)
+  reconst.sink <- matrix(blob$lsq %*% rare_sources, ncol=slen)
+  l1_error <- t(matrix(rare_sink, ncol=slen) - reconst.sink)
+
+  # Get the top N% most error taxa
+  keep.amount = 0.75
+  noneg.error <- sapply(l1_error, function(v) ifelse(v < 0, 0, v))
+  error.ord <- rev(order(noneg.error)) # largest to smallest
+  cutoff.index <- 1
+  if (sum(noneg.error) > 0) {
+    for (cutoff.index in 1:length(error.ord)) {
+      if (sum(l1_error[error.ord[1:cutoff.index]]) / sum(noneg.error) >= keep.amount) {
+        break
+      }
+    }
+  }
+  topn_resid_inds <- ifelse(1:length(l1_error) %in% error.ord[1:cutoff.index], T, F)
+
+  keep_inds <- topn_resid_inds
+
+  # save some intermediary values for later inspection
+  blob$reconst.sink <- reconst.sink
+  blob$l1.error <- l1_error
+
+  return (blob)
+}
 
 Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T,
-                  COVERAGE, unknown_initialize_flag = 1){
+                  COVERAGE, method='feast', unknown_initialize_flag = 1){
 
   tmp <- source
   test_zeros <- apply(tmp, 1, sum)
@@ -230,6 +315,21 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   source <- tmp[ind_to_use,]
   sinks <- sinks
 
+  alpha_init = NA
+  unknown_init = NA
+  if (method == 'stensl') {
+    print('Finding STENSL init...')
+
+    blob <- LsqResid.Procedure(sinks, source)
+
+    # rarefy unknown to the same level as the experiment
+    if (sum(blob$unknown) > 0) {
+      blob$unknown <- blob$unknown * (COVERAGE/sum(blob$unknown))
+    }
+
+    alpha_init <- blob$alpha
+    unknown_init <- blob$unknown
+  }
 
 
   #####adding support for multiple sources#####
@@ -299,6 +399,11 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
                                             n_sources = num_sources)
     }
 
+    if(unknown_initialize_flag == 2 & !is.na(sum(unknown_init))) {
+      print('Using STENSL unknown')
+      unknown_source <- unknown_init
+    }
+
     unknown_source_rarefy <- FEAST_rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
     source_2[[j+1]] <- t(unknown_source_rarefy)
     totalsource_2[(j+1),] <- t(unknown_source_rarefy)
@@ -325,6 +430,12 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   initalphs<-rep(1/(num_sources+1), num_sources+1)
   initalphs=initalphs/Reduce("+", initalphs)
   sink_em <- as.matrix(sinks)
+
+  if (!is.na(sum(alpha_init))) {
+    print('Using STENSL alpha')
+    alpha_init <- blob$alpha
+  }
+
   pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
 
   tmp<-do_EM(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr, observed=observed_samps)
