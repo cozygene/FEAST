@@ -1,5 +1,6 @@
 
 library(glmnet)
+library(CVXR)
 
 #E - step
 E <- function(alphas, sources, sink=NA, observed=NA){
@@ -196,7 +197,6 @@ M_stensl <- function(alphas, sources, sink, observed){
     },
     error=function(e) {
       print('Convex solver exited.')
-      print(e)
       alphas
     })
   }
@@ -273,20 +273,18 @@ do_EM <-function(alphas, sources, observed, sink, iterations, E_fn=E, M_fn=M){
     # if(abs(m_guesses[length(m_guesses)]-m_guesses[length(m_guesses)-1])<=10^-6)
     #   break
     # More comprehensive stopping conds
-    if (itr > 1) {
-      if (max(abs(prevalphas-newalphas)) < 10^-6) {
-        print('Convergeance criteria.')
-        break
-      }
-
-      lval = ifelse(exists('ll.list'), ll.list[length(ll.list)], 0)
-      lambda.info = ifelse(exists('sparse.lambda'), sprintf('Lambda:%.4f', sparse.lambda), '')
-      print(sprintf('[Iter %d/%d] ElogL:%.2f Unk:%.3f %s',
-        itr-1, iterations,
-        lval,
-        newalphas[length(newalphas)],
-        lambda.info))
+    if (max(abs(prevalphas-newalphas)) < 10^-6) {
+      print('Convergeance criteria.')
+      break
     }
+
+    lval = ifelse(exists('ll.list'), ll.list[length(ll.list)], 0)
+    lambda.info = ifelse(exists('sparse.lambda'), sprintf('Lambda:%.4f', sparse.lambda), '')
+    print(sprintf('[Iter %d/%d] ElogL:%.2f Unk:%.3f %s',
+      itr, iterations,
+      lval,
+      newalphas[length(newalphas)],
+      lambda.info))
   }
   ll.list <<- ll.list[2:length(ll.list)] # disregard first ll
   toret<-c(newalphas)
@@ -411,7 +409,7 @@ unknown_initialize <- function(sources, sink, n_sources){
 
 lsq_glmnet_l1l2 <- function(
   sink, sources,
-  l1l2=1, lambda=1e-6,
+  l1l2=1, init.lambda=1e-6,
   normalize=T) {
 
   if (normalize) {
@@ -420,7 +418,7 @@ lsq_glmnet_l1l2 <- function(
   }
 
   Amat <- model.matrix(~Sources, list(Sources=t(sources)))
-  result <- glmnet(Amat, sink, alpha=l1l2, lambda=lambda, lower.limits=0, intercept=F)
+  result <- glmnet(Amat, sink, alpha=l1l2, lambda=init.lambda, lower.limits=0, intercept=F)
 
   contr <- result$beta[2:length(result$beta)]
 
@@ -471,21 +469,10 @@ LsqResid.Procedure <- function(rare_sink, rare_sources) {
   reconst.sink <- matrix(blob$lsq %*% rare_sources, ncol=slen)
   l1_error <- t(matrix(rare_sink, ncol=slen) - reconst.sink)
 
-  # Get the top N% most error taxa
-  keep.amount = 0.75
-  noneg.error <- sapply(l1_error, function(v) ifelse(v < 0, 0, v))
-  error.ord <- rev(order(noneg.error)) # largest to smallest
-  cutoff.index <- 1
-  if (sum(noneg.error) > 0) {
-    for (cutoff.index in 1:length(error.ord)) {
-      if (sum(l1_error[error.ord[1:cutoff.index]]) / sum(noneg.error) >= keep.amount) {
-        break
-      }
-    }
-  }
-  topn_resid_inds <- ifelse(1:length(l1_error) %in% error.ord[1:cutoff.index], T, F)
-
-  keep_inds <- topn_resid_inds
+  unknown.resid = l1_error
+  unknown.resid[unknown.resid < 0] = 0
+  blob$unknown.residest <- unknown.resid
+  blob$unknown = blob$unknown.residest
 
   # save some intermediary values for later inspection
   blob$reconst.sink <- reconst.sink
@@ -514,7 +501,7 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
     blob <- LsqResid.Procedure(sinks, source)
 
-    # rarefy unknown to the same level as the experiment
+    # scale unknown to the same level as the experiment
     if (sum(blob$unknown) > 0) {
       blob$unknown <- blob$unknown * (COVERAGE/sum(blob$unknown))
     }
@@ -565,8 +552,6 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
     #create unknown for each sink i
 
-    sinks_rarefy <- FEAST_rarefy(matrix(sinks, nrow = 1), maxdepth = apply(totalsource_old, 1, sum)[1]) #make
-
     if(num_sources > 1){
 
       if(unknown_initialize_flag == 1)
@@ -594,6 +579,9 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     if(unknown_initialize_flag == 2 & !is.na(sum(unknown_init))) {
       print('Using STENSL unknown')
       unknown_source <- unknown_init
+      # override
+      # trueunk = c(readRDS('Data_files/unk_v2_50_010_1_050_R1000_100000.rds'))
+      # print(paste(sum(unknown_source), sum(trueunk)))
     }
 
     unknown_source_rarefy <- FEAST_rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
@@ -616,7 +604,6 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   observed_samps <- samps
   observed_samps[[(num_sources + 1)]] <- t(rep(0, dim(samps[[1]])[2]))
 
-
   # initalphs<-runif(num_sources+1, 0.0, 1.0)
   # for reproducibility, recommending fixed uniform init
   initalphs<-rep(1/(num_sources+1), num_sources+1)
@@ -627,6 +614,9 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     print('Using STENSL alpha')
     alpha_init <- blob$alpha
   }
+
+  # prenormalize the samp proportions (to get the correct ElogL)
+  samps = lapply(samps, function(l) { l/sum(l) })
 
   # pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
 

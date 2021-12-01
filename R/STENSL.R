@@ -9,7 +9,8 @@ STENSL <- function(
     metadata,
     EM_iterations,
     COVERAGE,
-	l.range=c(0.01, 0.1, 1, 10, 100)
+	l.range=c(0.01, 10)
+	# l.range=c(0.01, 0.1, 1, 10, 100)
 ) {
     max.lambda <- NA
 	results <- list()
