@@ -2,7 +2,7 @@
 library(glmnet)
 
 #E - step
-E <- function(alphas, sources){
+E <- function(alphas, sources, sink=NA, observed=NA){
   nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
   denom<-(Reduce("+", nums))
   return(nums/denom)
@@ -82,16 +82,190 @@ M_basic <- function(alphas, sources, sink){
   return(newAs/(tot))
 }
 
+alpha.solve.l1 <- function(sink, pij, lambda=1) {
+  # sparse constraint on 1:M sources and sum to 1
+  print(paste('Lambda:', lambda))
 
-do_EM <-function(alphas, sources, observed, sink, iterations){
+  # saveRDS(pij, 'pij.rds')
+  # saveRDS(sink, 'sink.rds')
+
+  posinds <- sink > 0 & colSums(pij) > 0
+  nsources <- dim(pij)[1]
+  ntaxa <- sum(posinds)
+
+  cvx.avector <- Variable(nsources)
+
+  terms <- list()
+  for (ii in 1:(nsources)) {
+    wi <- c(sink)[posinds] * pij[ii,posinds]
+    term <- wi * log(cvx.avector[ii])
+    terms[[ii]] <- sum(term)
+  }
+  term <- Reduce('+', terms)
+
+  constraints <- list(
+    sum(cvx.avector) <= 1,
+    cvx.avector >= 0
+  )
+
+  penalty <- lambda * p_norm(cvx.avector[1:(nsources-1)], 1)
+  prob <- Problem(Maximize(term - penalty), constraints)
+  use_solver <- 'ECOS'
+  if (dim(pij)[1] > 100) {
+    # ECOS default, SCS scales better for larger inputs
+    use_solver <- 'SCS'
+  }
+  result <- solve(prob, solver = use_solver)
+  out <- result$getValue(cvx.avector)
+
+  # print(paste('Max:', result$value))
+
+  return (out)
+}
+
+E_stensl <- function(alphas, sources, sink=NA, observed=NA){
+
+  ll <- NA
+  if (exists('pij')) {
+    # full EM procedure as defined in methods (can be slow)
+    nsources <- length(alphas)
+    ntaxa <- length(sources[[1]])
+    pij <<- matrix(0, nrow=nsources, ncol=ntaxa)
+    zero <- 0.000001
+    pijNonZero <- matrix(0, nrow=nsources, ncol=ntaxa)
+
+
+    old.gamma <- do.call(rbind, sources)
+    denom <- crossprod(alphas, old.gamma)
+    for (ii in 1:nsources) {
+      val <- alphas[ii] * old.gamma[ii,] / denom
+      pij[ii,] <<- val
+      val[is.na(val) | val < zero] <- zero
+      pijNonZero[ii,] <- val
+    }
+
+    if (!all(is.na(sink)) & !all(is.na(observed))) {
+      # we can compute the E[logL] for verification
+      term1 <- 0
+      for (ii in 1:nsources) {
+        logterm <- alphas[ii] * old.gamma[ii,]
+        logterm[logterm < zero] <- zero
+        val <- sum(sink * pijNonZero[ii,] * log(logterm))
+        term1 <- term1 + val
+      }
+      term2 <- 0
+      for (ii in 1:(nsources-1)) {
+        # unknown counts are not part of the LL
+        logterm <- old.gamma[ii,]
+        logterm[logterm < zero] <- zero
+        val <- sum(observed[[ii]]*log(logterm))
+        term2 <- term2 + val
+      }
+      ll <- term1 + term2
+      ll <- ll - sparse.lambda * sum(alphas[1:(nsources-1)]) # penalty term (from 1:M)
+      if (exists('ll.list') & ll < 0) ll.list <<- c(ll.list, ll)
+      print(paste('E[logL]:', ll))
+    }
+  }
+
+  nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
+  denom<-(Reduce("+", nums))
+  return(nums/denom)
+}
+
+M_stensl <- function(alphas, sources, sink, observed){
+
+  alphas.sparse <- NA
+  # if (useSparseMax & exists('pij')) {
+  if (T) {
+    pij[is.na(pij)] <- 0
+
+    # FEAST alphas using max step:
+    alphas.closedform <- rep(0, length(alphas))
+    for (ii in 1:length(alphas)) {
+      pijrow <- pij[ii,]
+      pijrow[is.na(pijrow)] <- 0
+      val <- sum(sink * pijrow)
+      alphas.closedform[ii] <- val
+    }
+    alphas.closedform <- alphas.closedform / sum(alphas.closedform)
+
+    # Sparse alphas using solver:
+    alphas.sparse <- tryCatch({
+      alpha.solve.l1(sink, pij, lambda=sparse.lambda)
+    },
+    error=function(e) {
+      print('Convex solver exited.')
+      alphas
+    })
+  }
+
+  newalphs<-c()
+  rel_sink <-sink/sum(sink)
+
+  if(sum(sources[[1]]) > 1){
+
+    sources <-lapply(sources, function(x) x/(sum(colSums(x))))
+  }
+
+
+  LOs<-lapply(sources, schur, b=rel_sink)
+  BOs<-t(mapply(crossprod, x=sources, y=alphas))
+  BOs<-split(BOs, seq(nrow(BOs)))
+  BOs<-lapply(BOs, as.matrix)
+  BOs<-lapply(BOs, t)
+  num_list <- list()
+  source_new <- list()
+
+
+  for(i in 1:length(sources)){
+    num <- c()
+    denom <- c()
+    num<-crossprod(alphas[i], (LOs[[i]]/(Reduce("+", BOs))))
+    num<-rapply(list(num), f=function(x) ifelse(is.nan(x),0,x), how="replace" ) #replace na with zero
+    num_list[[i]]<- num[[1]][1,] + observed[[i]][1,]
+
+    denom <- Reduce("+",unlist(num_list[[i]]))
+    source_new[[i]] <- num_list[[i]]/denom
+    source_new[[i]][is.na(source_new[[i]])] <- 0
+  }
+
+  sources <- source_new
+
+  newalphs<-c()
+  sources<-lapply(sources, t)
+  XOs<-lapply(sources,schur, b=rel_sink)
+  AOs<-t(mapply(crossprod, x=sources, y=alphas))
+  AOs<-split(AOs, seq(nrow(AOs)))
+  AOs<-lapply(AOs, as.matrix)
+  AOs<-lapply(AOs, t)
+  newAs<-c()
+  for(i in 1:length(sources)){
+    newA<-crossprod(alphas[i], (XOs[[i]]/(Reduce("+", AOs))))
+    newA<-rapply(list(newA), f=function(x) ifelse(is.nan(x),0,x), how="replace" )
+    newA<-Reduce("+",unlist(newA))
+    newAs<-c(newAs, newA)
+  }
+  tot<-sum(newAs)
+  Results <- list (new_alpha = newAs/(tot), new_sources = sources)
+
+  # if (useSparseMax) {
+  Results$new_alpha <- alphas.sparse / sum(alphas.sparse)
+  feast.alpha <- Results$new_alpha
+  print(paste('  Unk:', feast.alpha[length(sources)]))
+
+  return(Results)
+}
+
+do_EM <-function(alphas, sources, observed, sink, iterations, E_fn=E, M_fn=M){
 
   curalphas<-alphas
   newalphas<-alphas
   m_guesses<-c(alphas[1])
   for(itr in 1:iterations){
 
-    curalphas<-E(newalphas, sources)
-    tmp <- M(alphas = curalphas, sources = sources, sink = sink, observed = observed)
+    curalphas<-E_fn(newalphas, sources, sink, observed)
+    tmp <- M_fn(alphas = curalphas, sources = sources, sink = sink, observed = observed)
     newalphas <- tmp$new_alpha
     sources <- tmp$new_sources
 
@@ -436,9 +610,17 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     alpha_init <- blob$alpha
   }
 
-  pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
+  # pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
 
-  tmp<-do_EM(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr, observed=observed_samps)
+  tmp<-do_EM(
+    alphas=initalphs,
+    sources=samps,
+    sink=sink_em,
+    iterations=em_itr,
+    observed=observed_samps,
+    E_fn=ifelse(method == 'stensl', E_stensl, E),
+    M_fn=ifelse(method == 'stensl', M_stensl, M)
+  )
   pred_emnoise <- tmp$toret
 
   k <- 1
