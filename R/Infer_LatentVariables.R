@@ -320,7 +320,9 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   observed_samps[[(num_sources + 1)]] <- t(rep(0, dim(samps[[1]])[2]))
 
 
-  initalphs<-runif(num_sources+1, 0.0, 1.0)
+  # initalphs<-runif(num_sources+1, 0.0, 1.0)
+  # for reproducibility, recommending fixed uniform init
+  initalphs<-rep(1/(num_sources+1), num_sources+1)
   initalphs=initalphs/Reduce("+", initalphs)
   sink_em <- as.matrix(sinks)
   pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)

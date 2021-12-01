@@ -42,7 +42,7 @@
 #'
 #' @export
 FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag,
-                  dir_path=NA, outfile,method='stensl'){
+                  dir_path=NA, outfile,method='feast'){
 
   ###1. Parse metadata and check it has the correct hearer (i.e., Env, SourceSink,	id)
   if(sum(colnames(metadata)=='Env')==0) stop("The metadata file must contain an 'Env' column naming the source environment for each sample.")
