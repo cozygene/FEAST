@@ -84,7 +84,7 @@ M_basic <- function(alphas, sources, sink){
 
 alpha.solve.l1 <- function(sink, pij, lambda=1) {
   # sparse constraint on 1:M sources and sum to 1
-  print(paste('Lambda:', lambda))
+  # print(paste('Lambda:', lambda))
 
   # saveRDS(pij, 'pij.rds')
   # saveRDS(sink, 'sink.rds')
@@ -163,8 +163,8 @@ E_stensl <- function(alphas, sources, sink=NA, observed=NA){
       }
       ll <- term1 + term2
       ll <- ll - sparse.lambda * sum(alphas[1:(nsources-1)]) # penalty term (from 1:M)
-      if (exists('ll.list') & ll < 0) ll.list <<- c(ll.list, ll)
-      print(paste('E[logL]:', ll))
+      if (exists('ll.list')) ll.list <<- c(ll.list, ll)
+      # print(paste('E[logL]:', ll))
     }
   }
 
@@ -196,6 +196,7 @@ M_stensl <- function(alphas, sources, sink, observed){
     },
     error=function(e) {
       print('Convex solver exited.')
+      print(e)
       alphas
     })
   }
@@ -252,7 +253,6 @@ M_stensl <- function(alphas, sources, sink, observed){
   # if (useSparseMax) {
   Results$new_alpha <- alphas.sparse / sum(alphas.sparse)
   feast.alpha <- Results$new_alpha
-  print(paste('  Unk:', feast.alpha[length(sources)]))
 
   return(Results)
 }
@@ -261,18 +261,34 @@ do_EM <-function(alphas, sources, observed, sink, iterations, E_fn=E, M_fn=M){
 
   curalphas<-alphas
   newalphas<-alphas
-  m_guesses<-c(alphas[1])
+  # m_guesses<-c(alphas[1])
   for(itr in 1:iterations){
-
+    prevalphas = newalphas
     curalphas<-E_fn(newalphas, sources, sink, observed)
     tmp <- M_fn(alphas = curalphas, sources = sources, sink = sink, observed = observed)
     newalphas <- tmp$new_alpha
     sources <- tmp$new_sources
 
-    m_guesses<-c(m_guesses, newalphas[1])
-    if(abs(m_guesses[length(m_guesses)]-m_guesses[length(m_guesses)-1])<=10^-6) break
+    # m_guesses<-c(m_guesses, newalphas[1])
+    # if(abs(m_guesses[length(m_guesses)]-m_guesses[length(m_guesses)-1])<=10^-6)
+    #   break
+    # More comprehensive stopping conds
+    if (itr > 1) {
+      if (max(abs(prevalphas-newalphas)) < 10^-6) {
+        print('Convergeance criteria.')
+        break
+      }
 
+      lval = ifelse(exists('ll.list'), ll.list[length(ll.list)], 0)
+      lambda.info = ifelse(exists('sparse.lambda'), sprintf('Lambda:%.4f', sparse.lambda), '')
+      print(sprintf('[Iter %d/%d] ElogL:%.2f Unk:%.3f %s',
+        itr-1, iterations,
+        lval,
+        newalphas[length(newalphas)],
+        lambda.info))
+    }
   }
+  ll.list <<- ll.list[2:length(ll.list)] # disregard first ll
   toret<-c(newalphas)
   results <- list(toret = toret, sources = sources)
 
@@ -494,6 +510,8 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   if (method == 'stensl') {
     print('Finding STENSL init...')
 
+    ll.list <<- c() # reset ll history
+
     blob <- LsqResid.Procedure(sinks, source)
 
     # rarefy unknown to the same level as the experiment
@@ -625,14 +643,14 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
   k <- 1
   pred_emnoise_all <- c()
-  pred_em_all <- c()
+  # pred_em_all <- c()
 
   for(j in 1:length(env)){
 
     if(j %in% ind_to_use){
 
       pred_emnoise_all[j] <- pred_emnoise[k]
-      pred_em_all[j] <- pred_em[k]
+      # pred_em_all[j] <- pred_em[k]
       k <- k+1
 
     }
@@ -640,22 +658,22 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     else{
 
       pred_emnoise_all[j] <- 0
-      pred_em_all[j] <- 0
+      # pred_em_all[j] <- 0
     }
 
   }
 
   pred_emnoise_all[j+1] <- pred_emnoise[k]
-  pred_em_all[j+1] <- pred_em[k]
+  # pred_em_all[j+1] <- pred_em[k]
 
 
 
   names(pred_emnoise_all) <- c(env,"unknown")
-  names(pred_em_all) <- c(env,"unknown")
+  # names(pred_em_all) <- c(env,"unknown")
 
 
   Results <- list(unknown_source = unknown_source, unknown_source_rarefy = unknown_source_rarefy,
-                 data_prop = data.frame(pred_emnoise_all,pred_em_all))
+                 data_prop = data.frame(pred_emnoise_all))
   return(Results)
 
 }

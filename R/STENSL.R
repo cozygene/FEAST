@@ -8,10 +8,10 @@ STENSL <- function(
     C,
     metadata,
     EM_iterations,
-    COVERAGE
+    COVERAGE,
+	l.range=c(0.01, 0.1, 1, 10, 100)
 ) {
     max.lambda <- NA
-	l.range <- c(0.01, 0.01, 0.1, 1, 10, 100)
 	results <- list()
 	for (li in 1:length(l.range)) {
 		sparse.lambda <<- l.range[li]
