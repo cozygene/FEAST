@@ -42,7 +42,7 @@
 #'
 #' @export
 FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag,
-                  dir_path, outfile){
+                  dir_path=NA, outfile,method='stensl'){
 
   ###1. Parse metadata and check it has the correct hearer (i.e., Env, SourceSink,	id)
   if(sum(colnames(metadata)=='Env')==0) stop("The metadata file must contain an 'Env' column naming the source environment for each sample.")
@@ -94,7 +94,7 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
   ###Quantify the sources' contribution for each sink sample separately
 
   for(it in 1:num_sinks){
-    
+
     if(it%%10==0 || it == num_sinks)
       print(paste0("Calculating mixinig proportions for sink ", it))
 
@@ -125,7 +125,6 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
 
     sinks <- as.matrix(FEAST_rarefy(t(as.matrix(C[test.ix,])), COVERAGE))
 
-
     ###10. Estimate source proportions for each sink
     FEAST_output<-Infer.SourceContribution(source=sources, sinks = t(sinks), env = envs[train.ix], em_itr = EM_iterations, COVERAGE = COVERAGE)
 
@@ -144,8 +143,11 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
   rownames(proportions_mat) <- envs_sink
   # proportions_mat[is.na(proportions_mat)] <- 999
 
-  setwd(dir_path)
-  write.table(proportions_mat, file = paste0(outfile,"_source_contributions_matrix.txt"), sep = "\t")
+  if (!is.na(dir_path)) {
+    setwd(dir_path)
+    write.table(proportions_mat, file = paste0(outfile,"_source_contributions_matrix.txt"), sep = "\t")
+  }
+
   return(list = c(proportions_mat, FEAST_output))
 
 }
