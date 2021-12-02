@@ -278,8 +278,8 @@ do_EM <-function(alphas, sources, observed, sink, iterations, E_fn=E, M_fn=M){
       break
     }
 
-    lval = ifelse(exists('ll.list'), ll.list[length(ll.list)], 0)
-    lambda.info = ifelse(exists('sparse.lambda'), sprintf('Lambda:%.4f', sparse.lambda), '')
+    lval = ifelse(exists('ll.list') & length(ll.list), ll.list[length(ll.list)], NA)
+    lambda.info = ifelse(exists('sparse.lambda') & !is.na(sparse.lambda), sprintf('Lambda:%.4f', sparse.lambda), '')
     print(sprintf('[Iter %d/%d] ElogL:%.2f Unk:%.3f %s',
       itr, iterations,
       lval,
@@ -425,7 +425,7 @@ lsq_glmnet_l1l2 <- function(
   return (contr)
 }
 
-lsq_procedure <- function(sources, sink, default_known=0.99) {
+lsq_procedure <- function(sources, sink, default_known=0.95) {
   weights_l1 <- lsq_glmnet_l1l2(
     sink,
     sources,
@@ -494,7 +494,8 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
   alpha_init = NA
   unknown_init = NA
-  if (method == 'stensl') {
+  ll.list <<- c()
+  if (grepl('stensl', method)) {
     print('Finding STENSL init...')
 
     ll.list <<- c() # reset ll history
@@ -507,7 +508,19 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     }
 
     alpha_init <- blob$alpha
-    unknown_init <- blob$unknown
+    if (grepl('resid', method)) {
+      print('Resid unknown')
+      unknown_init <- blob$unknown.residest
+    } else if (grepl('max', method)) {
+      print('Max unknown')
+      unknown_init <- blob$unknown.maxest
+    } else {
+      unknown_init <- blob$unknown.maxest
+    }
+  }
+
+  if (method == 'feast') {
+    sparse.lambda <<- NA
   }
 
 
@@ -579,9 +592,6 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     if(unknown_initialize_flag == 2 & !is.na(sum(unknown_init))) {
       print('Using STENSL unknown')
       unknown_source <- unknown_init
-      # override
-      # trueunk = c(readRDS('Data_files/unk_v2_50_010_1_050_R1000_100000.rds'))
-      # print(paste(sum(unknown_source), sum(trueunk)))
     }
 
     unknown_source_rarefy <- FEAST_rarefy(matrix(unknown_source, nrow = 1), maxdepth = COVERAGE)
@@ -612,12 +622,13 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
   if (!is.na(sum(alpha_init))) {
     print('Using STENSL alpha')
-    alpha_init <- blob$alpha
+    initalphs <- alpha_init
   }
 
   # prenormalize the samp proportions (to get the correct ElogL)
   samps = lapply(samps, function(l) { l/sum(l) })
 
+  # Deprecated:
   # pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
 
   tmp<-do_EM(
@@ -626,8 +637,8 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
     sink=sink_em,
     iterations=em_itr,
     observed=observed_samps,
-    E_fn=ifelse(method == 'stensl', E_stensl, E),
-    M_fn=ifelse(method == 'stensl', M_stensl, M)
+    E_fn=ifelse(grepl('stensl', method), E_stensl, E),
+    M_fn=ifelse(grepl('stensl', method), M_stensl, M)
   )
   pred_emnoise <- tmp$toret
 

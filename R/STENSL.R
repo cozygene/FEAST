@@ -9,8 +9,8 @@ STENSL <- function(
     metadata,
     EM_iterations,
     COVERAGE,
-	l.range=c(0.01, 10)
-	# l.range=c(0.01, 0.1, 1, 10, 100)
+	l.range=c(0.01, 0.1, 1, 10, 100),
+	method='stensl'
 ) {
     max.lambda <- NA
 	results <- list()
@@ -26,14 +26,14 @@ STENSL <- function(
 			# rarefy_sink=T,
 			COVERAGE=COVERAGE,
 			different_sources_flag=0,
-			method='stensl'
+			method=method
 		)
 		cat('\n')
 
 		results[[li]] <- list(
 			lambda=sparse.lambda,
 			ll=ll.list,
-			alpha=unlist(em_result$proportions_mat)
+			em=em_result
 		)
 	}
 
@@ -41,7 +41,10 @@ STENSL <- function(
 	max.ind <- 1
 	for (ii in 1:length(results)) {
 		blob <- results[[ii]]
-		print(paste(ii, blob$ll[length(blob$ll)], unlist(blob$alpha)[51], blob$lambda))
+		print(paste(ii,
+			blob$ll[length(blob$ll)],
+			unlist(blob$em$proportions_mat)[51],
+			blob$lambda))
 		if ( max.ll < blob$ll[length(blob$ll)]) {
 			max.ll <- blob$ll[length(blob$ll)]
 			max.ind <- ii
@@ -51,8 +54,7 @@ STENSL <- function(
     max.lambda <<- l.range[max.ind]
 
 	feast_result <- list(
-		alpha=results[[max.ind]]$alpha,
-		iterations=results[[max.ind]]$iterations,
+		proportions_mat=results[[max.ind]]$em$proportions_mat,
         max.lambda=max.lambda
 	)
 
