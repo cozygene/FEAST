@@ -1,12 +1,12 @@
 
-library(glmnet)
-library(CVXR)
+# library(glmnet)
+# library(CVXR)
 
 #E - step
 E <- function(alphas, sources, sink=NA, observed=NA){
   nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
   denom<-(Reduce("+", nums))
-  return(nums/denom)
+  return(list(curalphas=nums/denom))
 }
 
 #M-step
@@ -125,60 +125,62 @@ alpha.solve.l1 <- function(sink, pij, lambda=1) {
   return (out)
 }
 
-E_stensl <- function(alphas, sources, sink=NA, observed=NA){
+E_stensl <- function(alphas, sources, sink=NA, observed=NA, options=list()){
 
   ll <- NA
-  if (exists('pij')) {
-    # full EM procedure as defined in methods (can be slow)
-    nsources <- length(alphas)
-    ntaxa <- length(sources[[1]])
-    pij <<- matrix(0, nrow=nsources, ncol=ntaxa)
-    zero <- 0.000001
-    pijNonZero <- matrix(0, nrow=nsources, ncol=ntaxa)
+  # full EM procedure as defined in methods (can be slow)
+  nsources <- length(alphas)
+  ntaxa <- length(sources[[1]])
+  pij <<- matrix(0, nrow=nsources, ncol=ntaxa)
+  zero <- 0.000001
+  pijNonZero <- matrix(0, nrow=nsources, ncol=ntaxa)
 
 
-    old.gamma <- do.call(rbind, sources)
-    denom <- crossprod(alphas, old.gamma)
+  old.gamma <- do.call(rbind, sources)
+  denom <- crossprod(alphas, old.gamma)
+  for (ii in 1:nsources) {
+    val <- alphas[ii] * old.gamma[ii,] / denom
+    pij[ii,] <<- val
+    val[is.na(val) | val < zero] <- zero
+    pijNonZero[ii,] <- val
+  }
+
+  if (!all(is.na(sink)) & !all(is.na(observed))) {
+    # we can compute the E[logL] for verification
+    term1 <- 0
     for (ii in 1:nsources) {
-      val <- alphas[ii] * old.gamma[ii,] / denom
-      pij[ii,] <<- val
-      val[is.na(val) | val < zero] <- zero
-      pijNonZero[ii,] <- val
+      logterm <- alphas[ii] * old.gamma[ii,]
+      logterm[logterm < zero] <- zero
+      val <- sum(sink * pijNonZero[ii,] * log(logterm))
+      term1 <- term1 + val
     }
-
-    if (!all(is.na(sink)) & !all(is.na(observed))) {
-      # we can compute the E[logL] for verification
-      term1 <- 0
-      for (ii in 1:nsources) {
-        logterm <- alphas[ii] * old.gamma[ii,]
-        logterm[logterm < zero] <- zero
-        val <- sum(sink * pijNonZero[ii,] * log(logterm))
-        term1 <- term1 + val
-      }
-      term2 <- 0
-      for (ii in 1:(nsources-1)) {
-        # unknown counts are not part of the LL
-        logterm <- old.gamma[ii,]
-        logterm[logterm < zero] <- zero
-        val <- sum(observed[[ii]]*log(logterm))
-        term2 <- term2 + val
-      }
-      ll <- term1 + term2
-      ll <- ll - sparse.lambda * sum(alphas[1:(nsources-1)]) # penalty term (from 1:M)
-      if (exists('ll.list')) ll.list <<- c(ll.list, ll)
-      # print(paste('E[logL]:', ll))
+    term2 <- 0
+    for (ii in 1:(nsources-1)) {
+      # unknown counts are not part of the LL
+      logterm <- old.gamma[ii,]
+      logterm[logterm < zero] <- zero
+      val <- sum(observed[[ii]]*log(logterm))
+      term2 <- term2 + val
     }
+    ll <- term1 + term2
+    ll <- ll - options$sparse.lambda * sum(alphas[1:(nsources-1)]) # penalty term (from 1:M)
+    # if (!is.na(ll.list)) ll.list <- c(ll.list, ll)
+    # print(paste('E[logL]:', ll))
   }
 
   nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
   denom<-(Reduce("+", nums))
-  return(nums/denom)
+  
+  res = list(curalphas=nums/denom, ll=ll, pij=pij)
+
+  return(res)
 }
 
-M_stensl <- function(alphas, sources, sink, observed){
+M_stensl <- function(alphas, sources, sink, observed, options=list()){
 
   alphas.sparse <- NA
   # if (useSparseMax & exists('pij')) {
+  pij = options$pij
   if (T) {
     pij[is.na(pij)] <- 0
 
@@ -194,7 +196,7 @@ M_stensl <- function(alphas, sources, sink, observed){
 
     # Sparse alphas using solver:
     alphas.sparse <- tryCatch({
-      alpha.solve.l1(sink, pij, lambda=sparse.lambda)
+      alpha.solve.l1(sink, pij, lambda=options$sparse.lambda)
     },
     error=function(e) {
       print('Convex solver exited.')
@@ -255,20 +257,30 @@ M_stensl <- function(alphas, sources, sink, observed){
   Results$new_alpha <- alphas.sparse / sum(alphas.sparse)
   feast.alpha <- Results$new_alpha
 
+  options$pij = pij
   return(Results)
 }
 
-do_EM <-function(alphas, sources, observed, sink, iterations, E_fn=E, M_fn=M){
+do_EM <-function(
+  alphas, sources, observed, sink, iterations, 
+  E_fn=E, M_fn=M,
+  trace.ll=F, options=list()){
 
+  ll.list = c()
   curalphas<-alphas
   newalphas<-alphas
   # m_guesses<-c(alphas[1])
   for(itr in 1:iterations){
     prevalphas = newalphas
-    curalphas<-E_fn(newalphas, sources, sink, observed)
-    tmp <- M_fn(alphas = curalphas, sources = sources, sink = sink, observed = observed)
-    newalphas <- tmp$new_alpha
-    sources <- tmp$new_sources
+    e_res<-E_fn(newalphas, sources, sink, observed, options=options)
+    if (trace.ll) {
+      ll.list = c(ll.list, e_res$ll)
+      options$pij = e_res$pij
+    }
+    curalphas = e_res$curalphas
+    m_res <- M_fn(alphas = curalphas, sources = sources, sink = sink, observed = observed, options=options)
+    newalphas <- m_res$new_alpha
+    sources <- m_res$new_sources
 
     # m_guesses<-c(m_guesses, newalphas[1])
     # if(abs(m_guesses[length(m_guesses)]-m_guesses[length(m_guesses)-1])<=10^-6)
@@ -279,17 +291,16 @@ do_EM <-function(alphas, sources, observed, sink, iterations, E_fn=E, M_fn=M){
       break
     }
 
-    lval = ifelse(exists('ll.list') & length(ll.list), ll.list[length(ll.list)], NA)
-    lambda.info = ifelse(exists('sparse.lambda') & !is.na(sparse.lambda), sprintf('Lambda:%.4f', sparse.lambda), '')
+    lval = ifelse(trace.ll, ll.list[length(ll.list)], NA)
+    lambda.info = ifelse('sparse.lambda' %in% names(options), sprintf('Lambda:%.4f', options$sparse.lambda), '')
     print(sprintf('[Iter %d/%d] ElogL:%.2f Unk:%.3f %s',
       itr, iterations,
       lval,
       newalphas[length(newalphas)],
       lambda.info))
   }
-  ll.list <<- ll.list[2:length(ll.list)] # disregard first ll
   toret<-c(newalphas)
-  results <- list(toret = toret, sources = sources)
+  results <- list(toret = toret, sources = sources, ll.list=ll.list)
 
   return(results)
 }
@@ -483,7 +494,7 @@ LsqResid.Procedure <- function(rare_sink, rare_sources) {
 }
 
 Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_itr = 1000, env = rownames(sources_data), include_epsilon = T,
-                  COVERAGE, method='feast', unknown_initialize_flag = 1){
+                  COVERAGE, method='feast', unknown_initialize_flag = 1, options=list()){
 
   tmp <- source
   test_zeros <- apply(tmp, 1, sum)
@@ -495,11 +506,9 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
   alpha_init = NA
   unknown_init = NA
-  ll.list <<- c()
+  
   if (grepl('stensl', method)) {
     print('Finding STENSL init...')
-
-    ll.list <<- c() # reset ll history
 
     blob <- LsqResid.Procedure(sinks, source)
 
@@ -519,11 +528,6 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
       unknown_init <- blob$unknown.maxest
     }
   }
-
-  if (method == 'feast') {
-    sparse.lambda <<- NA
-  }
-
 
   #####adding support for multiple sources#####
   if(length(dim(source)[1]) > 0)
@@ -634,16 +638,20 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   # Deprecated:
   # pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
 
+  use.stensl = grepl('stensl', method)
   tmp<-do_EM(
     alphas=initalphs,
     sources=samps,
     sink=sink_em,
     iterations=em_itr,
     observed=observed_samps,
-    E_fn=ifelse(grepl('stensl', method), E_stensl, E),
-    M_fn=ifelse(grepl('stensl', method), M_stensl, M)
+    E_fn=ifelse(use.stensl, E_stensl, E),
+    M_fn=ifelse(use.stensl, M_stensl, M),
+    trace.ll=use.stensl,
+    options=options
   )
   pred_emnoise <- tmp$toret
+  ll.list = tmp$ll.list
 
   k <- 1
   pred_emnoise_all <- c()
@@ -677,7 +685,7 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
 
 
   Results <- list(unknown_source = unknown_source, unknown_source_rarefy = unknown_source_rarefy,
-                 data_prop = data.frame(pred_emnoise_all))
+                 data_prop = data.frame(pred_emnoise_all), ll.list=ll.list)
   return(Results)
 
 }

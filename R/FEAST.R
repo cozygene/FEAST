@@ -40,9 +40,17 @@
 #'                      different_sources_flag = 1)
 #' }
 #'
+#' @import Rcpp
+#' @import dplyr
+#' @import ggplot2
+#' @import ggthemes
+#' @import vegan
+#' @import gridExtra
+#' @import reshape2
+#' @useDynLib FEAST
 #' @export
 FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_sources_flag,
-                  dir_path=NA, outfile,method='feast'){
+                  dir_path=NA, outfile, method='feast', options=list()){
 
   ###1. Parse metadata and check it has the correct hearer (i.e., Env, SourceSink,	id)
   if(sum(colnames(metadata)=='Env')==0) stop("The metadata file must contain an 'Env' column naming the source environment for each sample.")
@@ -134,7 +142,8 @@ FEAST <- function(C, metadata, EM_iterations = 1000, COVERAGE = NULL ,different_
       em_itr = EM_iterations,
       COVERAGE = COVERAGE,
       method=method,
-      unknown_initialize_flag=unknown_initialize_flag)
+      unknown_initialize_flag=unknown_initialize_flag,
+      options=options)
 
     idx.sources <- which(all_sources_sampleID %in% rownames(metadata)[train.ix])
     proportions_mat[it,c(idx.sources, idx.unknown)] <- FEAST_output$data_prop[,1]

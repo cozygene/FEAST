@@ -1,9 +1,7 @@
 
-# some global vars
-pij <- NA
-sparse.lambda <- NA
-ll.list <- c()
-
+#' @import glmnet
+#' @import CVXR
+#' @export
 STENSL <- function(
     C,
     metadata,
@@ -15,8 +13,7 @@ STENSL <- function(
     max.lambda <- NA
 	results <- list()
 	for (li in 1:length(l.range)) {
-		sparse.lambda <<- l.range[li]
-		ll.list <<- c()
+		sparse.lambda <- l.range[li]
         pij <<- NA
 		set.seed(0)
 		em_result <- FEAST(
@@ -26,13 +23,13 @@ STENSL <- function(
 			# rarefy_sink=T,
 			COVERAGE=COVERAGE,
 			different_sources_flag=0,
-			method=method
+			method=method,
+			options=list(sparse.lambda=sparse.lambda, pij=NA)
 		)
 		cat('\n')
 
 		results[[li]] <- list(
 			lambda=sparse.lambda,
-			ll=ll.list,
 			em=em_result
 		)
 	}
