@@ -29,8 +29,10 @@ Imports:
     ggthemes,
     gridExtra,
     Rcpp,
-    RcppArmadillo
+    RcppArmadillo,
+    glmnet,
+    CVXR
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2
