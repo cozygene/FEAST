@@ -119,7 +119,8 @@ alpha.solve.l1 <- function(sink, pij, lambda=1) {
   result <- solve(prob, solver = use_solver)
   out <- result$getValue(cvx.avector)
 
-  # print(paste('Max:', result$value))
+  out[out < 0] = 0
+  out = out / sum(out)
 
   return (out)
 }
@@ -626,7 +627,9 @@ Infer.SourceContribution <- function(source = sources_data, sinks = sinks, em_it
   }
 
   # prenormalize the samp proportions (to get the correct ElogL)
-  samps = lapply(samps, function(l) { l/sum(l) })
+  if (method == 'stensl') {
+    samps = lapply(samps, function(l) { l/sum(l) })
+  }
 
   # Deprecated:
   # pred_em<-do_EM_basic(alphas=initalphs, sources=samps, sink=sink_em, iterations=em_itr)
