@@ -72,8 +72,7 @@ result <- STENSL(
 	C=as.matrix(otus),
 	metadata=meta,
 	EM_iterations=MAX_ITERS,
-	COVERAGE=COVERAGE_DEPTH,
-	l.range=c(0.1,1,10)
+	COVERAGE=COVERAGE_DEPTH
 )
 ```
 
