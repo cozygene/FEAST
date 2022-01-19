@@ -55,99 +55,28 @@ Demo
 -----------------------
 We provide a dataset for an example of STENSL usage. Download the demo files <a href="https://github.com/cozygene/FEAST/tree/STENSL/Data_files">here</a>.
 
-First load the **FEAST** packages into R which will also import STENSL:
+STENSL is implemented as part of the FEAST package.
+First load the **FEAST** packages into R which will the STENSL function:
 ```
 library(FEAST)
 ```
 
 Then, load the datasets:
 ```
-metadata <- Load_metadata(metadata_path = "~/FEAST/Data_files/metadata_example_multi.txt")
-otus <- Load_CountMatrix(CountMatrix_path = "~/FEAST/Data_files/otu_example_multi.txt")
-```
-Run _FEAST_, saving the output with prefix "demo":
-
-```
-FEAST_output <- FEAST(C = otus, metadata = metadata, different_sources_flag = 1, dir_path = "~/FEAST/Data_files/",
-                      outfile="demo")
+meta = read.table('Data_files/metadata_example_stensl.txt', sep='\t', header=T)
+otus = read.table('Data_files/otu_example_stensl.txt', sep='\t', header=T)
 ```
 
-_FEAST_ will then save the file
-*demo_FEAST.txt* - A file containing an S1 by S2 matrix P, where S1 is the number sinks and S2 is the number of sources (including an unknown source). Each row in matrix P sums to 1.
-
-Graphical representation: 
-
-As input, *PlotSourceContribution* takes mandatory arguments:
-
-- _SinkNames_ - A vector with the sink names to plot.
-- _SourceNames_ - A vector with all the sources' names.
-- _Same_sources_flag_ - A Boolean value indicating the source-sink plotting assignment. Same_sources_flag = 1 if the same sources are assigned to the pre-defined sink samples , otherwise = 0.
-- _dir_path_ - A path to an output .png file.
-- _mixing_proportions_ - A list of vectors, where entry i corresponds to the vector of source contributions (summing to 1) to sink i.
-- _Plot_title_ -  Plot's title and output .png file's name.
-- _N_ - Number of barplots in each output .png file.
-
-
 ```
-PlotSourceContribution(SinkNames = rownames(FEAST_output)[c(5:8)],
-                       SourceNames = colnames(FEAST_output), dir_path = "~/FEAST/Data_files/",
-                       mixing_proportions = FEAST_output, Plot_title = "Test_",Same_sources_flag = 0, N = 4)
+result <- STENSL(
+	C=as.matrix(otus),
+	metadata=meta,
+	EM_iterations=MAX_ITERS,
+	COVERAGE=COVERAGE_DEPTH,
+	l.range=c(0.1,1,10)
+)
 ```
 
-
-
-Input format
------------------------
-The input to *FEAST* is composed of two tab-delimited ASCII text files:
-
-(1) count table - An m by n count matrix, where m is the number samples and n is the number of taxa. Row names are the sample ids ('SampleID'). Column names are the taxa ids. Every consecutive column contains read counts for each sample. Note that this order must be respected.
-
-
-count matrix (first 4 rows and columns):
-
-| | ERR525698 |ERR525693 | ERR525688| ERR525699|
-| ------------- | ------------- |------------- |------------- |------------- |
-| taxa_1  |  0 | 5 | 0|20 |
-| taxa_2  |  15 | 5 | 0|0 |
-| taxa_3  |  0 | 13 | 200|0 |
-| taxa_4  |  4 | 5 | 0|0 |
-
-
-
-(2) metadata - An m by 3 table, where m is the number of samples. The metadata table has three columns (i.e., 'Env', 'SourceSink', 'id'). The first column is a description of the sampled environment (e.g., human gut), the second column indicates if this sample is a source or a sink (can take the value 'Source' or 'Sink'). The third column is the Sink-Source id. When using multiple sinks, each tested with the same group of sources, only the rows with 'SourceSink' = Sink will get an id (between 1 - number of sinks in the data). In this scenario, the sources’ ids are blank. When using multiple sinks, each tested with a distinct group of sources, each combination of sink and its corresponding sources should get the same id (between 1 - number of sinks in the data). Note that these names must be respected.
-
-
-*using multiple sinks, each tested with the same group of sources:
-
-| SampleID | Env |SourceSink | id |
-| ------------- | ------------- |------------- |-------------|
-| ERR525698  |  infant gut 1 | Sink | 1
-| ERR525693  |  infant gut 2 | Sink | 2 |
-| ERR525688   |  Adult gut 1 | Source| NA |
-| ERR525699  |  Adult gut 2 | Source | NA |
-| ERR525697  |  Adult gut 3 | Source | NA |
-
-
-*using multiple sinks, each tested with a different group of sources:
-
-| SampleID | Env |SourceSink | id |
-| ------------- | ------------- |------------- |-------------|
-| ERR525698  |  infant gut 1 | Sink | 1
-| ERR525688   |  Adult gut 1 | Source| 1 |
-| ERR525691  |  Adult gut 2 | Source | 1 |
-| ERR525699  |  infant gut 2 | Sink | 2 |
-| ERR525697  |  Adult gut 3 | Source | 2 |
-| ERR525696  |  Adult gut 4 | Source | 2 |
-
-
- 
-
-Output - 
-
-| infant gut 2  |Adult gut 1 | Adult gut 2| Adult gut 3| Adult skin 1 |  Adult skin 2|  Adult skin 3| Soil 1 | Soil 2 | unknown|
-| ------------- | ------------- |------------- |------------- |------------- |------------- |------------- |------------- |------------- |------------- |
-|  5.108461e-01  |  9.584116e-23 | 4.980321e-12 | 2.623358e-02|5.043635e-13 | 8.213667e-59| 1.773058e-10 |  2.704118e-14 |  3.460067e-02 |  4.283196e-01 |
-
-
-
+*STENSL* uses the same inpurt format as *FEAST*.
+Details of the input are described in https://github.com/cozygene/FEAST/blob/master/README.md
 
