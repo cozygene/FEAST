@@ -34,16 +34,16 @@ STENSL <- function(
 		)
 	}
 
-	max.ll <- results[[1]]$ll[length(results[[1]]$ll)]
+	max.ll <- results[[1]]$em$FEAST_output$ll.list[length(results[[1]]$em$FEAST_output$ll.list)]
 	max.ind <- 1
 	for (ii in 1:length(results)) {
 		blob <- results[[ii]]
 		print(paste(ii,
-			blob$ll[length(blob$ll)],
+			blob$em$FEAST_output$ll.list[length(blob$em$FEAST_output$ll.list)],
 			unlist(blob$em$proportions_mat)[51],
 			blob$lambda))
-		if ( max.ll < blob$ll[length(blob$ll)]) {
-			max.ll <- blob$ll[length(blob$ll)]
+		if ( max.ll < blob$em$FEAST_output$ll.list[length(blob$em$FEAST_output$ll.list)]) {
+			max.ll <- blob$em$FEAST_output$ll.list[length(blob$em$FEAST_output$ll.list)]
 			max.ind <- ii
 		}
 	}

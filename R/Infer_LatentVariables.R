@@ -3,7 +3,7 @@
 # library(CVXR)
 
 #E - step
-E <- function(alphas, sources, sink=NA, observed=NA){
+E <- function(alphas, sources, sink=NA, observed=NA, options=list()){
   nums<-(sapply(1:length(alphas), function(n) Reduce("+", crossprod(as.numeric(alphas[n]),as.numeric(sources[[n]])))))
   denom<-(Reduce("+", nums))
   return(list(curalphas=nums/denom))
@@ -126,7 +126,6 @@ alpha.solve.l1 <- function(sink, pij, lambda=1) {
 }
 
 E_stensl <- function(alphas, sources, sink=NA, observed=NA, options=list()){
-
   ll <- NA
   # full EM procedure as defined in methods (can be slow)
   nsources <- length(alphas)
