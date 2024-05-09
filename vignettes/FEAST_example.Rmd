@@ -32,7 +32,7 @@ lapply(Packages, library, character.only = TRUE)
 install *FEAST* using devtools
 
 ```{r install_FEAST, echo=T, results='hide', message=F, warning=F}
-devtools::install_github("cozygene/FEAST", ref = "FEAST_beta")
+devtools::install_github("cozygene/FEAST", ref = "FEAST")
 ```
 
 
